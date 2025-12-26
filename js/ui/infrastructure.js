@@ -19,8 +19,48 @@ export async function loadInfrastructureData(periodDays = null) {
 
     const rawBuilds = await fetchBuildsForPeriod(periodDays);
     const builds = rawBuilds.map(normalizeBuild);
+    
+    // Load AWS data if available
+    let awsData = null;
+    if (state.awsEnabled) {
+        awsData = await loadAwsData(periodDays);
+    }
 
-    return calculateInfraStats(builds, periodDays);
+    return calculateInfraStats(builds, periodDays, awsData);
+}
+
+// Load AWS data (instances, costs)
+async function loadAwsData(periodDays) {
+    let instances = null;
+    let costs = null;
+    let costsError = null;
+    
+    try {
+        const [instancesRes, costsRes] = await Promise.all([
+            fetch('/api/aws/instances'),
+            fetch(`/api/aws/costs?days=${periodDays}`)
+        ]);
+        
+        if (instancesRes.ok) {
+            const data = await instancesRes.json();
+            if (!data.error) {
+                instances = data;
+            }
+        }
+        
+        // Handle costs response - may have error due to IAM permissions
+        const costsData = await costsRes.json();
+        if (costsData.available) {
+            costs = costsData;
+        } else if (costsData.error) {
+            costsError = costsData.error;
+        }
+        
+        return { instances, costs, costsError };
+    } catch (error) {
+        console.error('Failed to load AWS data:', error);
+        return { instances, costs, costsError: error.message };
+    }
 }
 
 // Get cost per CPU hour from settings
@@ -29,7 +69,7 @@ function getCpuCostPerHour() {
 }
 
 // Calculate infrastructure statistics
-function calculateInfraStats(builds, periodDays) {
+function calculateInfraStats(builds, periodDays, awsData = null) {
     const cpuCostPerHour = getCpuCostPerHour();
     // Current queue (running + pending)
     const queuedBuilds = builds.filter(b => b.status === 'running' || b.status === 'pending');
@@ -133,6 +173,10 @@ function calculateInfraStats(builds, periodDays) {
         .sort((a, b) => b.cost - a.cost)
         .slice(0, 10);
 
+    // Use AWS cost if available, otherwise use estimated
+    const actualCost = awsData?.costs?.ec2_cost ?? null;
+    const useAwsCost = actualCost !== null;
+    
     return {
         periodDays,
         totalBuilds: builds.length,
@@ -160,7 +204,11 @@ function calculateInfraStats(builds, periodDays) {
             totalHours: totalCpuHours,
             estimatedCost,
             costPerHour: cpuCostPerHour
-        }
+        },
+        awsData: awsData,
+        awsCost: useAwsCost ? actualCost : null,
+        useAwsCost,
+        awsCostsError: awsData?.costsError || null
     };
 }
 
@@ -176,7 +224,14 @@ export function renderInfrastructure(container, stats) {
     }
 
     const cpuHoursDisplay = stats.cpuStats.totalHours.toFixed(1);
-    const costDisplay = stats.cpuStats.estimatedCost.toFixed(2);
+    const estimatedCostDisplay = stats.cpuStats.estimatedCost.toFixed(2);
+    const awsCostDisplay = stats.awsCost !== null ? stats.awsCost.toFixed(2) : null;
+    const costDisplay = awsCostDisplay || estimatedCostDisplay;
+    const costSource = stats.useAwsCost ? 'AWS Cost Explorer' : `$${stats.cpuStats.costPerHour}/CPU-hour (estimated)`;
+    
+    // AWS instances info
+    const awsInstances = stats.awsData?.instances;
+    const runningInstances = awsInstances?.instances?.filter(i => i.state === 'running') || [];
     
     container.innerHTML = `
         <div class="infra-container">
@@ -196,8 +251,8 @@ export function renderInfrastructure(container, stats) {
                     <h3>💰 Resource Usage & Cost</h3>
                     <div class="cost-summary">
                         <div class="cost-item main">
-                            <span class="cost-value">$${costDisplay}</span>
-                            <span class="cost-label">Estimated Cost</span>
+                            <span class="cost-value ${stats.useAwsCost ? 'aws-cost' : ''}">$${costDisplay}</span>
+                            <span class="cost-label">${stats.useAwsCost ? 'AWS EC2 Cost' : 'Estimated Cost'}</span>
                         </div>
                         <div class="cost-item">
                             <span class="cost-value">${cpuHoursDisplay}h</span>
@@ -209,9 +264,21 @@ export function renderInfrastructure(container, stats) {
                         </div>
                     </div>
                     <div class="cost-note">
-                        Based on $${stats.cpuStats.costPerHour}/CPU-hour
+                        ${stats.useAwsCost ? '☁️ ' : ''}${costSource}
                     </div>
                 </div>
+                
+                ${runningInstances.length > 0 ? `
+                <!-- AWS Agents -->
+                <div class="infra-card">
+                    <h3>☁️ CI Agents (AWS)</h3>
+                    <div class="agents-summary">
+                        <div class="agents-count">${runningInstances.length} running</div>
+                        <div class="agents-cost">$${awsInstances.total_hourly_cost?.toFixed(2) || '0.00'}/hr</div>
+                    </div>
+                    ${renderAwsInstances(runningInstances)}
+                </div>
+                ` : ''}
 
                 <!-- Queue Status -->
                 <div class="infra-card">
@@ -284,9 +351,18 @@ export function renderInfrastructure(container, stats) {
             </div>
             
             <div class="infra-footer">
-                <div class="infra-warning">
-                    ℹ️ For more accurate cost data from AWS Auto Scaling, configure AWS credentials in server settings.
+                ${stats.awsCostsError ? `
+                <div class="infra-warning error">
+                    ⚠️ AWS Cost Explorer error: ${stats.awsCostsError.includes('AccessDeniedException') 
+                        ? 'Missing IAM permission ce:GetCostAndUsage. Add this permission to get real AWS costs.' 
+                        : stats.awsCostsError}
                 </div>
+                ` : ''}
+                ${!state.awsEnabled ? `
+                <div class="infra-warning">
+                    ℹ️ For more accurate cost data, configure AWS credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY).
+                </div>
+                ` : ''}
             </div>
         </div>
     `;
@@ -327,6 +403,26 @@ function renderProblemBranches(branches) {
                     <span class="problem-count">${b.failureCount} failures</span>
                 </div>
             `).join('')}
+        </div>
+    `;
+}
+
+// Render AWS instances list
+function renderAwsInstances(instances) {
+    if (instances.length === 0) {
+        return '<div class="empty-list">No running instances</div>';
+    }
+
+    return `
+        <div class="aws-instances-list">
+            ${instances.slice(0, 5).map(i => `
+                <div class="aws-instance-item">
+                    <span class="instance-name">${i.name || i.id}</span>
+                    <span class="instance-type">${i.type}</span>
+                    <span class="instance-cost">$${i.hourly_cost.toFixed(3)}/hr</span>
+                </div>
+            `).join('')}
+            ${instances.length > 5 ? `<div class="more-items">+${instances.length - 5} more</div>` : ''}
         </div>
     `;
 }

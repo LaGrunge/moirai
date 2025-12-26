@@ -119,6 +119,42 @@ def proxy_request(server_id, endpoint):
     except requests.exceptions.RequestException as e:
         return jsonify({'error': str(e)}), 502
 
+# EC2 instance pricing (on-demand, us-east-1, approximate)
+EC2_HOURLY_PRICES = {
+    # T3 instances
+    't3.micro': 0.0104,
+    't3.small': 0.0208,
+    't3.medium': 0.0416,
+    't3.large': 0.0832,
+    't3.xlarge': 0.1664,
+    't3.2xlarge': 0.3328,
+    # T2 instances
+    't2.micro': 0.0116,
+    't2.small': 0.023,
+    't2.medium': 0.0464,
+    't2.large': 0.0928,
+    't2.xlarge': 0.1856,
+    # M5 instances
+    'm5.large': 0.096,
+    'm5.xlarge': 0.192,
+    'm5.2xlarge': 0.384,
+    'm5.4xlarge': 0.768,
+    # C5 instances
+    'c5.large': 0.085,
+    'c5.xlarge': 0.17,
+    'c5.2xlarge': 0.34,
+    'c5.4xlarge': 0.68,
+    # C7g instances (Graviton)
+    'c7g.medium': 0.0363,
+    'c7g.large': 0.0725,
+    'c7g.xlarge': 0.145,
+    'c7g.2xlarge': 0.29,
+    'c7g.4xlarge': 0.58,
+    # R5 instances
+    'r5.large': 0.126,
+    'r5.xlarge': 0.252,
+}
+
 # API endpoint to check AWS status
 @app.route('/api/aws/status')
 def aws_status():
@@ -127,7 +163,128 @@ def aws_status():
         'region': AWS_REGION if AWS_ENABLED else None
     })
 
-# API endpoint to get AWS autoscaler data (if configured)
+# API endpoint to get EC2 instances (CI agents)
+@app.route('/api/aws/instances')
+def aws_instances():
+    if not AWS_ENABLED:
+        return jsonify({'error': 'AWS not configured'}), 400
+    
+    try:
+        import boto3
+        from datetime import datetime, timezone
+        
+        ec2 = boto3.client('ec2', region_name=AWS_REGION)
+        
+        # Get all running/stopped instances (filter by tag if needed)
+        # You can add filters like: Filters=[{'Name': 'tag:Role', 'Values': ['ci-agent']}]
+        response = ec2.describe_instances()
+        
+        instances = []
+        for reservation in response['Reservations']:
+            for instance in reservation['Instances']:
+                # Get instance name from tags
+                name = None
+                for tag in instance.get('Tags', []):
+                    if tag['Key'] == 'Name':
+                        name = tag['Value']
+                        break
+                
+                # Calculate uptime
+                launch_time = instance.get('LaunchTime')
+                uptime_hours = 0
+                if launch_time and instance['State']['Name'] == 'running':
+                    uptime_hours = (datetime.now(timezone.utc) - launch_time).total_seconds() / 3600
+                
+                instance_type = instance['InstanceType']
+                hourly_cost = EC2_HOURLY_PRICES.get(instance_type, 0.10)  # default $0.10/hr
+                
+                instances.append({
+                    'id': instance['InstanceId'],
+                    'name': name,
+                    'type': instance_type,
+                    'state': instance['State']['Name'],
+                    'launch_time': launch_time.isoformat() if launch_time else None,
+                    'private_ip': instance.get('PrivateIpAddress'),
+                    'uptime_hours': round(uptime_hours, 2),
+                    'hourly_cost': hourly_cost,
+                    'estimated_cost': round(uptime_hours * hourly_cost, 2)
+                })
+        
+        return jsonify({
+            'instances': instances,
+            'total_running': len([i for i in instances if i['state'] == 'running']),
+            'total_hourly_cost': sum(i['hourly_cost'] for i in instances if i['state'] == 'running')
+        })
+    except ImportError:
+        return jsonify({'error': 'boto3 not installed. Run: pip install boto3'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# API endpoint to get AWS cost data for a period
+@app.route('/api/aws/costs')
+def aws_costs():
+    if not AWS_ENABLED:
+        return jsonify({'error': 'AWS not configured', 'available': False})
+    
+    try:
+        import boto3
+        from datetime import datetime, timedelta
+        
+        # Get period from query params (default 30 days)
+        days = int(request.args.get('days', 30))
+        
+        ce = boto3.client('ce', region_name='us-east-1')  # Cost Explorer is only in us-east-1
+        
+        end_date = datetime.now().strftime('%Y-%m-%d')
+        start_date = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+        
+        # Get cost by service
+        response = ce.get_cost_and_usage(
+            TimePeriod={'Start': start_date, 'End': end_date},
+            Granularity='DAILY',
+            Metrics=['UnblendedCost'],
+            GroupBy=[{'Type': 'DIMENSION', 'Key': 'SERVICE'}]
+        )
+        
+        # Extract EC2 costs
+        daily_costs = []
+        total_cost = 0
+        ec2_cost = 0
+        
+        for result in response['ResultsByTime']:
+            date = result['TimePeriod']['Start']
+            day_total = 0
+            day_ec2 = 0
+            
+            for group in result['Groups']:
+                service = group['Keys'][0]
+                cost = float(group['Metrics']['UnblendedCost']['Amount'])
+                day_total += cost
+                if 'EC2' in service:
+                    day_ec2 += cost
+            
+            daily_costs.append({
+                'date': date,
+                'total': round(day_total, 2),
+                'ec2': round(day_ec2, 2)
+            })
+            total_cost += day_total
+            ec2_cost += day_ec2
+        
+        return jsonify({
+            'available': True,
+            'period_days': days,
+            'total_cost': round(total_cost, 2),
+            'ec2_cost': round(ec2_cost, 2),
+            'daily_costs': daily_costs
+        })
+    except ImportError:
+        return jsonify({'error': 'boto3 not installed', 'available': False})
+    except Exception as e:
+        # Return 200 with error info so frontend can handle gracefully
+        return jsonify({'error': str(e), 'available': False})
+
+# API endpoint to get Auto Scaling group info
 @app.route('/api/aws/autoscaler')
 def aws_autoscaler():
     if not AWS_ENABLED:
@@ -136,36 +293,18 @@ def aws_autoscaler():
     try:
         import boto3
         
-        # Get Auto Scaling group info
         autoscaling = boto3.client('autoscaling', region_name=AWS_REGION)
-        ec2 = boto3.client('ec2', region_name=AWS_REGION)
         
-        # Get all Auto Scaling groups
         groups = autoscaling.describe_auto_scaling_groups()['AutoScalingGroups']
         
         result = []
         for group in groups:
-            # Get instance details
-            instance_ids = [i['InstanceId'] for i in group.get('Instances', [])]
-            instances = []
-            
-            if instance_ids:
-                reservations = ec2.describe_instances(InstanceIds=instance_ids)['Reservations']
-                for r in reservations:
-                    for i in r['Instances']:
-                        instances.append({
-                            'id': i['InstanceId'],
-                            'type': i['InstanceType'],
-                            'state': i['State']['Name'],
-                            'launch_time': i['LaunchTime'].isoformat() if i.get('LaunchTime') else None
-                        })
-            
             result.append({
                 'name': group['AutoScalingGroupName'],
                 'desired': group['DesiredCapacity'],
                 'min': group['MinSize'],
                 'max': group['MaxSize'],
-                'instances': instances
+                'instances': len(group.get('Instances', []))
             })
         
         return jsonify(result)

@@ -351,6 +351,79 @@
     background-color: var(--bg-color);
     border-radius: 8px;
     border-left: 3px solid var(--pending-color);
+    margin-bottom: 8px;
+}
+
+.infra-warning.error {
+    border-left-color: var(--failure-color);
+    color: var(--failure-color);
+}
+
+.infra-warning:last-child {
+    margin-bottom: 0;
+}
+
+/* AWS Cost styling */
+.cost-value.aws-cost {
+    color: var(--primary-color);
+}
+
+/* AWS Agents */
+.agents-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.agents-count {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--success-color);
+}
+
+.agents-cost {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+/* AWS Instances List */
+.aws-instances-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aws-instance-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background-color: var(--bg-color);
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.instance-name {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.instance-type {
+    color: var(--text-secondary);
+    font-family: monospace;
+    font-size: 0.8rem;
+}
+
+.instance-cost {
+    color: var(--success-color);
+    font-weight: 500;
 }
 
 /* .infra-loading, .infra-error, .infra-placeholder - use .tab-* from base.css */
