@@ -22,33 +22,31 @@ export async function loadContributorsData(periodDays = null) {
     return calculateContributorStats(builds, periodDays);
 }
 
-// Normalize build to get author info
+// Normalize build to get author info based on CI type
 function normalizeBuildWithAuthor(build) {
-    // Try various field names used by Woodpecker/Drone
-    const author = build.author || 
-                   build.sender || 
-                   build.author_login || 
-                   build.author_name ||
-                   build.creator ||
-                   build.trigger_user ||
-                   'Unknown';
+    const isWoodpecker = state.currentServer?.type === 'woodpecker';
     
-    const authorAvatar = build.author_avatar || 
-                         build.sender_avatar || 
-                         build.avatar_url ||
-                         build.author_avatar_url ||
-                         null;
+    let authorLogin, authorAvatar, authorEmail;
     
-    const authorEmail = build.author_email || 
-                        build.sender_email || 
-                        build.email ||
-                        '';
+    if (isWoodpecker) {
+        // Woodpecker: author is the git username, author_avatar is the avatar URL
+        authorLogin = build.author || null;
+        authorAvatar = build.author_avatar || null;
+        authorEmail = build.author_email || '';
+    } else {
+        // Drone: author_login is the username, author_avatar is the avatar
+        // sender is also available but usually same as author_login
+        authorLogin = build.author_login || build.sender || null;
+        authorAvatar = build.author_avatar || null;
+        authorEmail = build.author_email || '';
+    }
     
     return {
         ...build,
-        author,
-        authorEmail,
-        authorAvatar
+        author: authorLogin || 'Unknown',  // Username for grouping and profile URL
+        authorLogin,
+        authorAvatar,
+        authorEmail
     };
 }
 
@@ -62,7 +60,8 @@ function calculateContributorStats(builds, periodDays) {
         
         if (!contributors[author]) {
             contributors[author] = {
-                name: author,
+                name: author,                        // Username (same as login for now)
+                login: authorInfo.authorLogin,       // Username for profile URL
                 email: authorInfo.authorEmail,
                 avatar: authorInfo.authorAvatar,
                 totalBuilds: 0,
@@ -261,7 +260,8 @@ function getAvatarHtml(contributor, withLink = false) {
     }
     
     if (withLink) {
-        const profileUrl = getUserProfileUrl(contributor.name, state.currentRepo, contributor.avatar);
+        // Use login (username) for profile URL, not display name
+        const profileUrl = getUserProfileUrl(contributor.login || contributor.name, state.currentRepo, contributor.avatar);
         if (profileUrl) {
             return `<a href="${profileUrl}" target="_blank" rel="noopener noreferrer" class="contributor-link">${avatarContent}</a>`;
         }
@@ -271,7 +271,8 @@ function getAvatarHtml(contributor, withLink = false) {
 
 // Get contributor name HTML (optionally wrapped in link)
 function getNameHtml(contributor) {
-    const profileUrl = getUserProfileUrl(contributor.name, state.currentRepo, contributor.avatar);
+    // Use login (username) for profile URL, display name for text
+    const profileUrl = getUserProfileUrl(contributor.login || contributor.name, state.currentRepo, contributor.avatar);
     if (profileUrl) {
         return `<a href="${profileUrl}" target="_blank" rel="noopener noreferrer" class="contributor-link">${escapeHtml(contributor.name)}</a>`;
     }
