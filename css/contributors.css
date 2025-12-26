@@ -113,10 +113,14 @@
     font-weight: 600;
     color: var(--text-color);
     margin-bottom: 4px;
-    max-width: 120px;
+    max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+.podium-name[title] {
+    cursor: help;
 }
 
 .podium-builds {

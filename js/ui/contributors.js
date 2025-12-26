@@ -237,7 +237,7 @@ function renderPodium(topContributors) {
             <div class="podium-place second">
                 ${second ? `
                     <div class="podium-avatar">${getAvatarHtml(second, true)}</div>
-                    <div class="podium-name">${getNameHtml(second)}</div>
+                    <div class="podium-name" title="${escapeHtml(second.name)}">${getNameHtml(second)}</div>
                     <div class="podium-builds">${second.totalBuilds} builds</div>
                     <div class="podium-medal">🥈</div>
                     <div class="podium-pedestal">2</div>
@@ -245,7 +245,7 @@ function renderPodium(topContributors) {
             </div>
             <div class="podium-place first">
                 <div class="podium-avatar">${getAvatarHtml(first, true)}</div>
-                <div class="podium-name">${getNameHtml(first)}</div>
+                <div class="podium-name" title="${escapeHtml(first.name)}">${getNameHtml(first)}</div>
                 <div class="podium-builds">${first.totalBuilds} builds</div>
                 <div class="podium-medal">🥇</div>
                 <div class="podium-pedestal">1</div>
@@ -253,7 +253,7 @@ function renderPodium(topContributors) {
             <div class="podium-place third">
                 ${third ? `
                     <div class="podium-avatar">${getAvatarHtml(third, true)}</div>
-                    <div class="podium-name">${getNameHtml(third)}</div>
+                    <div class="podium-name" title="${escapeHtml(third.name)}">${getNameHtml(third)}</div>
                     <div class="podium-builds">${third.totalBuilds} builds</div>
                     <div class="podium-medal">🥉</div>
                     <div class="podium-pedestal">3</div>
@@ -309,8 +309,8 @@ function renderContributorChart(contributors, maxBuilds) {
 
     const barHeight = 30;
     const gap = 8;
-    const labelWidth = 120;
-    const chartWidth = 400;
+    const labelWidth = 250;
+    const chartWidth = 300;
     const height = contributors.length * (barHeight + gap);
 
     const bars = contributors.map((c, i) => {
@@ -319,11 +319,16 @@ function renderContributorChart(contributors, maxBuilds) {
         const successWidth = maxBuilds > 0 ? (c.successBuilds / maxBuilds) * chartWidth : 0;
         const failWidth = maxBuilds > 0 ? (c.failedBuilds / maxBuilds) * chartWidth : 0;
         const otherWidth = maxBuilds > 0 ? ((c.otherBuilds || 0) / maxBuilds) * chartWidth : 0;
+        
+        // Truncate name smartly: show more chars, add ellipsis if needed
+        const maxNameLen = 28;
+        const displayName = c.name.length > maxNameLen ? c.name.slice(0, maxNameLen - 1) + '…' : c.name;
 
         return `
             <g transform="translate(0, ${y})">
                 <text x="${labelWidth - 10}" y="${barHeight / 2 + 5}" class="chart-label" text-anchor="end">
-                    ${c.medal || ''} ${escapeHtml(c.name.length > 12 ? c.name.slice(0, 12) + '...' : c.name)}
+                    ${c.medal || ''} ${escapeHtml(displayName)}
+                    <title>${escapeHtml(c.name)}</title>
                 </text>
                 <rect x="${labelWidth}" y="0" width="${successWidth}" height="${barHeight}" 
                       fill="var(--success-color)" rx="4">
