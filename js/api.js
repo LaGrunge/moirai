@@ -6,21 +6,35 @@ import { handleError, ErrorTypes } from './errors.js';
 
 // API request helper - uses proxy to keep tokens server-side
 export async function apiRequest(endpoint) {
-    if (!state.currentServer) throw new Error('No server selected');
+    if (!state.currentServer) {
+        const error = new Error('No server selected');
+        handleError(error, 'apiRequest');
+        throw error;
+    }
 
     // Use proxy endpoint instead of direct API call
     const url = `/proxy/${state.currentServer.id}${endpoint}`;
-    const response = await fetch(url, {
-        headers: {
-            'Content-Type': 'application/json'
+
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        if (!response.ok) {
+            const error = new Error(`API Error: ${response.status} ${response.statusText}`);
+            handleError(error, `apiRequest ${endpoint}`);
+            throw error;
         }
-    });
 
-    if (!response.ok) {
-        throw new Error(`API Error: ${response.status} ${response.statusText}`);
+        return response.json();
+    } catch (error) {
+        if (error.name === 'TypeError') {
+            // Network error
+            handleError(error, `apiRequest ${endpoint} (network)`);
+        }
+        throw error;
     }
-
-    return response.json();
 }
 
 // Detect CI type (Drone or Woodpecker) - uses proxy
@@ -176,9 +190,12 @@ export async function loadServersFromProxy() {
             const servers = await response.json();
             state.servers = servers;
             return servers;
+        } else {
+            const error = new Error(`Failed to load servers: ${response.status}`);
+            handleError(error, 'loadServersFromProxy');
         }
-    } catch (e) {
-        console.error('Failed to load servers from proxy:', e);
+    } catch (error) {
+        handleError(error, 'loadServersFromProxy');
     }
     return [];
 }

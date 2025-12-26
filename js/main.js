@@ -1,8 +1,8 @@
 // CI Dashboard Application - Main Entry Point
 // Supports both Woodpecker and Drone CI
 
-import { state, loadSettings, loadSavedConfigs, loadServersFromConfig, saveSavedConfigs } from './state.js';
-import { initGlobalErrorHandlers, handleError } from './errors.js';
+import { state, loadSettings, loadSavedConfigs, saveSavedConfigs } from './state.js';
+import { initGlobalErrorHandlers } from './errors.js';
 import { apiRequest, getBuildsEndpoint, getExistingBranches, getOpenPullRequests, autoDetectServerTypes, loadServersFromProxy } from './api.js';
 import { normalizeBuild, groupByBranch, groupByCron, sortBranchBuilds, filterBranchBuilds } from './builds.js';
 import { initTheme } from './ui/theme.js';

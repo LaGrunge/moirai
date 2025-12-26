@@ -67,26 +67,3 @@ export function saveSavedConfigs() {
     localStorage.setItem('ci_dashboard_saved_configs', JSON.stringify(state.savedConfigs));
 }
 
-// Load servers from config.js (window.DASHBOARD_CONFIG or CI_SERVERS)
-export function loadServersFromConfig() {
-    let configServers = [];
-
-    // Check both possible config formats
-    if (typeof CI_SERVERS !== 'undefined' && Array.isArray(CI_SERVERS)) {
-        configServers = CI_SERVERS;
-    } else if (window.DASHBOARD_CONFIG && Array.isArray(window.DASHBOARD_CONFIG.servers)) {
-        configServers = window.DASHBOARD_CONFIG.servers;
-    }
-
-    if (configServers.length > 0) {
-        state.servers = configServers.map((s, i) => ({
-            id: s.id || `server-${i}`,
-            name: s.name,
-            url: s.url.replace(/\/$/, ''),
-            token: s.token,
-            type: s.type || 'auto'
-        }));
-    }
-    
-    return state.servers;
-}
