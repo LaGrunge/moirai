@@ -15,6 +15,8 @@ import { initDemoMode, loadDemoData } from './demo.js';
 import { loadOverviewData, renderOverview, initOverviewPeriodHandler } from './ui/overview.js';
 import { loadInfrastructureData, renderInfrastructure, initInfraPeriodHandler } from './ui/infrastructure.js';
 import { loadContributorsData, renderContributors, initContribPeriodHandler } from './ui/contributors.js';
+import { initGlobalStatus, showGlobalLoader, hideGlobalLoader, forceHideGlobalLoader, setConnectionStatus, updateLastUpdateTime } from './ui/globalStatus.js';
+import { initKeyboardShortcuts } from './ui/keyboard.js';
 
 // DOM Elements
 const elements = {
@@ -45,6 +47,7 @@ const elements = {
 // Initialize application
 document.addEventListener('DOMContentLoaded', () => {
     initGlobalErrorHandlers();
+    initGlobalStatus();
     loadSettings();
     initTheme(elements.themeToggle);
     initDemoMode(elements.demoToggle, getDemoCallbacks());
@@ -52,6 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initConfigSelect(elements.configSelectBtn, elements.configDropdown);
     initBranchToolbar();
     initSettingsTab();
+    initKeyboardShortcuts({
+        refresh: refreshAllData,
+        tabButtons: elements.tabButtons,
+        tabContents: elements.tabContents
+    });
     loadData();
 });
 
@@ -129,7 +137,7 @@ function initSettingsTab() {
 }
 
 // Select a config from dropdown
-function selectConfig(configId) {
+async function selectConfig(configId) {
     elements.configDropdown.classList.remove('open');
 
     if (configId) {
@@ -149,12 +157,23 @@ function selectConfig(configId) {
             updateConfigSelectButton(elements.configSelectBtn);
             updateConfigDropdownSelection(elements.configDropdown);
 
-            // Load cards immediately
-            loadBranchBuilds();
-            loadCronBuilds();
-            loadOverview();
-            loadInfrastructure();
-            loadContributors();
+            // Load cards with global loader
+            showGlobalLoader('Loading repository data...');
+            try {
+                await Promise.all([
+                    loadBranchBuilds(),
+                    loadCronBuilds(),
+                    loadOverview(),
+                    loadInfrastructure(),
+                    loadContributors()
+                ]);
+                setConnectionStatus('connected');
+                updateLastUpdateTime();
+            } catch (error) {
+                setConnectionStatus('error', 'Failed to load data');
+            } finally {
+                forceHideGlobalLoader();
+            }
         }
     } else {
         state.currentConfig = null;
@@ -162,6 +181,7 @@ function selectConfig(configId) {
         state.currentRepo = null;
         localStorage.removeItem('ci_dashboard_selected_config');
         updateConfigSelectButton(elements.configSelectBtn);
+        setConnectionStatus('disconnected');
         showPlaceholder(elements.branchesCards, 'Select a repository from the dropdown');
         showPlaceholder(elements.cronCards, 'Select a repository from the dropdown');
         showPlaceholder(elements.overviewContent, 'Select a repository to view overview');
@@ -323,6 +343,29 @@ async function loadCronBuilds() {
     }
 }
 
+// Refresh all data (called by keyboard shortcut R)
+async function refreshAllData() {
+    if (!state.currentServer || !state.currentRepo) return;
+    
+    showGlobalLoader('Refreshing...');
+    try {
+        await Promise.all([
+            loadBranchBuilds(),
+            loadCronBuilds(),
+            loadOverview(),
+            loadInfrastructure(),
+            loadContributors()
+        ]);
+        setConnectionStatus('connected');
+        updateLastUpdateTime();
+    } catch (error) {
+        setConnectionStatus('error', 'Refresh failed');
+    } finally {
+        forceHideGlobalLoader();
+    }
+}
+
 // Export for console usage and demo mode
 window.loadBranchBuilds = loadBranchBuilds;
 window.loadCronBuilds = loadCronBuilds;
+window.refreshAllData = refreshAllData;

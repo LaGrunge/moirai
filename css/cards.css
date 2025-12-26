@@ -320,5 +320,78 @@ a.commit-sha:hover {
 @media (max-width: 768px) {
     .cards-container {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .branches-toolbar {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .branch-filter {
+        width: 100%;
+        min-width: unset;
+    }
+
+    .sort-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .card-header {
+        padding: 0.875rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .card-title {
+        font-size: 1rem;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .card-body {
+        padding: 1rem;
+    }
+
+    .build-row {
+        font-size: 0.9rem;
+    }
+
+    .card-footer {
+        padding: 0.625rem 1rem;
+    }
+
+    .commit-info {
+        flex-wrap: wrap;
+    }
+
+    .commit-message {
+        width: 100%;
+        margin-top: 0.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-title {
+        font-size: 0.95rem;
+    }
+
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .build-label,
+    .build-value {
+        font-size: 0.85rem;
+    }
+
+    .sort-btn {
+        font-size: 0.8rem;
+        padding: 0.35rem 0.6rem;
     }
 }

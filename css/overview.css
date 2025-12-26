@@ -192,12 +192,74 @@
 
 /* Responsive overview */
 @media (max-width: 768px) {
+    .overview-content {
+        padding: 10px;
+    }
+
     .overview-kpi-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
     }
     
     .overview-header {
         flex-direction: column;
-        gap: 16px;
+        gap: 12px;
+    }
+
+    .health-indicator {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .overview-period-select {
+        width: 100%;
+    }
+
+    .kpi-card {
+        padding: 16px 12px;
+    }
+
+    .kpi-value {
+        font-size: 1.5rem;
+    }
+
+    .kpi-label {
+        font-size: 0.8rem;
+    }
+
+    .chart-card {
+        padding: 16px;
+    }
+
+    .chart-card h3 {
+        font-size: 0.95rem;
+    }
+
+    .pie-chart {
+        width: 160px;
+        height: 160px;
+    }
+
+    .legend-item {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .overview-kpi-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+
+    .kpi-value {
+        font-size: 1.25rem;
+    }
+
+    .health-text {
+        font-size: 1rem;
+    }
+
+    .health-icon {
+        font-size: 1.5rem;
     }
 }
