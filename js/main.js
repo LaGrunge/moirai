@@ -12,6 +12,7 @@ import { initSettings, renderSavedConfigsList, populateAddConfigServerSelect } f
 import { renderBranchCards, renderCronCards } from './ui/cards.js';
 import { showLoading, showPlaceholder, showError } from './ui/common.js';
 import { initDemoMode, loadDemoData } from './demo.js';
+import { loadOverviewData, renderOverview, initOverviewPeriodHandler } from './ui/overview.js';
 
 // DOM Elements
 const elements = {
@@ -19,6 +20,7 @@ const elements = {
     configDropdown: document.getElementById('config-dropdown'),
     branchesCards: document.getElementById('branches-cards'),
     cronCards: document.getElementById('cron-cards'),
+    overviewContent: document.getElementById('overview-content'),
     tabButtons: document.querySelectorAll('.tab-btn'),
     tabContents: document.querySelectorAll('.tab-content'),
     themeToggle: document.getElementById('theme-toggle'),
@@ -55,6 +57,7 @@ function getDemoCallbacks() {
         loadData,
         loadBranchBuilds,
         loadCronBuilds,
+        loadOverview,
         populateConfigDropdown: () => populateConfigDropdown(elements.configDropdown, selectConfig),
         updateConfigSelectButton: () => updateConfigSelectButton(elements.configSelectBtn),
         elements
@@ -143,6 +146,7 @@ function selectConfig(configId) {
             // Load cards immediately
             loadBranchBuilds();
             loadCronBuilds();
+            loadOverview();
         }
     } else {
         state.currentConfig = null;
@@ -152,6 +156,25 @@ function selectConfig(configId) {
         updateConfigSelectButton(elements.configSelectBtn);
         showPlaceholder(elements.branchesCards, 'Select a repository from the dropdown');
         showPlaceholder(elements.cronCards, 'Select a repository from the dropdown');
+        showPlaceholder(elements.overviewContent, 'Select a repository to view overview');
+    }
+}
+
+// Load overview data
+async function loadOverview() {
+    if (!state.currentServer || !state.currentRepo) {
+        showPlaceholder(elements.overviewContent, 'Select a repository to view overview');
+        return;
+    }
+
+    elements.overviewContent.innerHTML = '<div class="overview-loading">Loading overview...</div>';
+
+    try {
+        const stats = await loadOverviewData();
+        renderOverview(elements.overviewContent, stats);
+        initOverviewPeriodHandler(elements.overviewContent);
+    } catch (error) {
+        elements.overviewContent.innerHTML = `<div class="overview-error">Failed to load overview: ${error.message}</div>`;
     }
 }
 

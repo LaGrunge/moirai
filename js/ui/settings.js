@@ -25,10 +25,19 @@ export function initSettings(elements, callbacks) {
 
     // Initialize stats period select from settings
     if (statsPeriodSelect) {
-        statsPeriodSelect.value = state.settings.statsPeriodDays || 30;
+        const currentPeriod = state.settings.statsPeriodDays || 30;
+        statsPeriodSelect.value = currentPeriod;
         statsPeriodSelect.addEventListener('change', (e) => {
-            state.settings.statsPeriodDays = parseInt(e.target.value);
+            const newPeriod = parseInt(e.target.value);
+            state.settings.statsPeriodDays = newPeriod;
             saveSettings();
+            // Close all open stats panels so they use new period when reopened
+            document.querySelectorAll('.stats-container').forEach(container => {
+                container.style.display = 'none';
+            });
+            document.querySelectorAll('.stats-btn.active').forEach(btn => {
+                btn.classList.remove('active');
+            });
         });
     }
 

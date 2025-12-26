@@ -43,8 +43,6 @@ export function createBuildCard(build, type) {
         isPRStats = false;
     }
     
-    console.log('[Card] Creating card:', { type, buildNumber: build.number, branch: build.branch, statsKey, isPRStats, title });
-
     const repoFullName = getRepoFullName(state.currentRepo);
     const buildUrl = getBuildUrl(build);
     const commitUrl = build.commit ? `https://github.com/${repoFullName}/commit/${build.commit}` : null;
@@ -215,7 +213,6 @@ function attachCardClickHandlers(container) {
                 const branch = decodeURIComponent(atob(encodedBranch));
                 const isCron = wrapper.dataset.isCron === 'true';
                 const isPR = wrapper.dataset.isPr === 'true';
-                console.log('[Stats] Click on card:', wrapper.id, 'branch:', branch, 'isCron:', isCron, 'isPR:', isPR);
                 toggleStats(wrapper.id, branch, isCron, null, false, isPR);
             });
         }

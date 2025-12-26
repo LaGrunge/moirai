@@ -33,12 +33,19 @@
     </header>
 
     <nav class="tabs">
+        <button class="tab-btn" data-tab="overview">📊 Overview</button>
         <button class="tab-btn active" data-tab="branches">Branches</button>
         <button class="tab-btn" data-tab="cron">Cron Builds</button>
         <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
     </nav>
 
     <main class="content">
+        <div id="overview-tab" class="tab-content">
+            <div id="overview-content" class="overview-content">
+                <div class="placeholder">Select a repository to view overview</div>
+            </div>
+        </div>
+
         <div id="branches-tab" class="tab-content active">
             <div class="branches-toolbar">
                 <input type="text" id="branch-filter" class="branch-filter" placeholder="Filter branches/PRs...">

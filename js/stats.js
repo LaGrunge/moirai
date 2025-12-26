@@ -7,9 +7,7 @@ import { getRepoFullName, formatSeconds } from './utils.js';
 
 // Get default period from settings
 export function getDefaultStatsPeriod() {
-    const period = state.settings.statsPeriodDays || 30;
-    console.log('[Stats] getDefaultStatsPeriod:', period, 'from state.settings:', state.settings);
-    return period;
+    return state.settings.statsPeriodDays || 30;
 }
 
 // Format status for display (success -> OK, etc.)
@@ -33,8 +31,6 @@ export async function getBranchBuilds(branchOrPR, periodDays = null, isCron = fa
         periodDays = getDefaultStatsPeriod();
     }
     
-    console.log('[Stats] getBranchBuilds called:', { branchOrPR, periodDays, isCron, isPR });
-    
     const repoFullName = getRepoFullName(state.currentRepo);
     let endpoint;
 
@@ -46,8 +42,6 @@ export async function getBranchBuilds(branchOrPR, periodDays = null, isCron = fa
 
     const allBuilds = await apiRequest(endpoint);
     const cutoffTime = Math.floor(Date.now() / 1000) - (periodDays * 24 * 60 * 60);
-
-    console.log('[Stats] Total builds fetched:', allBuilds.length, 'cutoffTime:', new Date(cutoffTime * 1000));
 
     // Filter by branch/cron/PR and time period
     const filtered = allBuilds
@@ -66,11 +60,6 @@ export async function getBranchBuilds(branchOrPR, periodDays = null, isCron = fa
             }
         })
         .sort((a, b) => a.created - b.created); // Oldest first for histogram
-    
-    console.log('[Stats] Filtered builds for "' + branchOrPR + '" (isPR=' + isPR + '):', filtered.length);
-    if (filtered.length > 0) {
-        console.log('[Stats] Sample build:', filtered[0]);
-    }
     
     return filtered;
 }
