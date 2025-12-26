@@ -1,0 +1,40 @@
+services:
+  moirai:
+    build: .
+    container_name: moirai-dashboard
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+    env_file:
+      - .env
+    environment:
+      - PORT=8080  # internal port, external is 80
+      - DEBUG=${DEBUG:-false}
+      # Single CI server
+      - CI_SERVER_NAME=${CI_SERVER_NAME:-}
+      - CI_SERVER_URL=${CI_SERVER_URL:-}
+      - CI_SERVER_TOKEN=${CI_SERVER_TOKEN:-}
+      - CI_SERVER_TYPE=${CI_SERVER_TYPE:-}
+      # Multiple CI servers (1-10)
+      - CI_SERVER_1_NAME=${CI_SERVER_1_NAME:-}
+      - CI_SERVER_1_URL=${CI_SERVER_1_URL:-}
+      - CI_SERVER_1_TOKEN=${CI_SERVER_1_TOKEN:-}
+      - CI_SERVER_1_TYPE=${CI_SERVER_1_TYPE:-}
+      - CI_SERVER_2_NAME=${CI_SERVER_2_NAME:-}
+      - CI_SERVER_2_URL=${CI_SERVER_2_URL:-}
+      - CI_SERVER_2_TOKEN=${CI_SERVER_2_TOKEN:-}
+      - CI_SERVER_2_TYPE=${CI_SERVER_2_TYPE:-}
+      - CI_SERVER_3_NAME=${CI_SERVER_3_NAME:-}
+      - CI_SERVER_3_URL=${CI_SERVER_3_URL:-}
+      - CI_SERVER_3_TOKEN=${CI_SERVER_3_TOKEN:-}
+      - CI_SERVER_3_TYPE=${CI_SERVER_3_TYPE:-}
+      # AWS (optional)
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/')"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s

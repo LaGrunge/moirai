@@ -65,31 +65,33 @@ A CI system is, in essence, a system of fate — every commit spins a new thread
 
 ## Quick Start
 
-### 1. Set environment variables
+### Docker (recommended)
 
 ```bash
-# Single server
+# 1. Copy and configure environment
+cp .env.example .env
+nano .env  # Add your CI server URLs and tokens
+
+# 2. Start the container
+docker compose up -d
+
+# 3. View logs
+docker compose logs -f
+```
+
+The dashboard will be available at `http://localhost` (port 80).
+
+### Manual (legacy)
+
+```bash
+# Set environment variables
 export CI_SERVER_NAME="My CI"
 export CI_SERVER_URL="https://ci.example.com"
 export CI_SERVER_TOKEN="your-api-token"
 
-# Or multiple servers
-export CI_SERVER_1_NAME="Woodpecker"
-export CI_SERVER_1_URL="https://woodpecker.example.com"
-export CI_SERVER_1_TOKEN="token1"
-
-export CI_SERVER_2_NAME="Drone"
-export CI_SERVER_2_URL="https://drone.example.com"
-export CI_SERVER_2_TOKEN="token2"
-```
-
-### 2. Start the server
-
-```bash
+# Start the server
 ./start.sh
 ```
-
-The dashboard will be available at `http://localhost:80`.
 
 ---
 
@@ -148,7 +150,10 @@ Required IAM permissions:
 moirai/
 ├── index.html          # Main HTML page
 ├── server.py           # Flask proxy server
-├── start.sh            # Startup script
+├── Dockerfile          # Docker image definition
+├── docker-compose.yml  # Docker Compose config
+├── .env.example        # Environment template
+├── start.sh            # Legacy startup script
 ├── requirements.txt    # Python dependencies (flask, requests, boto3)
 ├── favicon.svg         # App icon
 │
@@ -203,7 +208,20 @@ moirai/
 - Python 3.8+
 - pip packages: `flask`, `requests`, `boto3` (optional, for AWS)
 
-### Running locally
+### Running with Docker
+
+```bash
+# Build and run
+docker compose up --build -d
+
+# Stop
+docker compose down
+
+# Rebuild after changes
+docker compose up --build -d
+```
+
+### Running locally (without Docker)
 
 ```bash
 # Create virtual environment
@@ -219,7 +237,7 @@ python3 server.py
 
 ### Running on port 80
 
-Port 80 requires root privileges. The `start.sh` script handles this:
+With Docker, port 80 works out of the box. For manual setup, the `start.sh` script handles sudo:
 
 ```bash
 ./start.sh  # Will prompt for sudo if needed
@@ -233,6 +251,8 @@ Port 80 requires root privileges. The `start.sh` script handles this:
 - **XSS protection** — User input escaped before rendering
 - **Sensitive files blocked** — `server.py`, `.env` not served as static files
 - **AWS credentials server-side** — Never exposed to frontend
+- **Non-root container** — Docker runs as unprivileged `moirai` user
+- **Secrets in .env** — Environment file excluded from git and Docker image
 
 ---
 

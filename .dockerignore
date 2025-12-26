@@ -1,0 +1,27 @@
+# Git
+.git
+.gitignore
+
+# Virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Local configs
+.env
+.env.local
+*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docs
+README.md
+LICENSE
+
+# Scripts (not needed in container)
+start.sh
