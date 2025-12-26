@@ -1,0 +1,203 @@
+/* Overview Tab Styles - KPI cards, charts, health indicator */
+
+.overview-content {
+    padding: 20px;
+}
+
+.overview-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.overview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.health-indicator {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-radius: 12px;
+    background-color: var(--card-bg);
+    border: 2px solid var(--border-color);
+}
+
+.health-indicator.health-good {
+    border-color: var(--success-color);
+}
+
+.health-indicator.health-warning {
+    border-color: var(--pending-color);
+}
+
+.health-indicator.health-critical {
+    border-color: var(--failure-color);
+}
+
+.health-icon {
+    font-size: 2rem;
+}
+
+.health-text {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.overview-period-select {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.overview-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.kpi-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+}
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 8px;
+}
+
+.kpi-good { color: var(--success-color); }
+.kpi-warning { color: var(--pending-color); }
+.kpi-bad { color: var(--failure-color); }
+
+.kpi-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.overview-charts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.chart-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.chart-card h3 {
+    margin: 0 0 16px 0;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.pie-chart-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.pie-chart {
+    width: 200px;
+    height: 200px;
+}
+
+.pie-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.875rem;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+}
+
+.legend-label {
+    color: var(--text-color);
+}
+
+.legend-value {
+    color: var(--text-secondary);
+}
+
+.overview-loading,
+.overview-error,
+.overview-placeholder {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.overview-error {
+    color: var(--failure-color);
+}
+
+/* Shared chart styles */
+.bar-chart,
+.line-chart {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+}
+
+.chart-bar {
+    transition: opacity 0.2s ease;
+}
+
+.chart-bar:hover {
+    opacity: 0.8;
+}
+
+.chart-dot {
+    transition: r 0.2s ease;
+}
+
+.chart-dot:hover {
+    r: 5;
+}
+
+.chart-label {
+    font-size: 10px;
+    fill: var(--text-secondary);
+}
+
+/* Responsive overview */
+@media (max-width: 768px) {
+    .overview-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .overview-header {
+        flex-direction: column;
+        gap: 16px;
+    }
+}

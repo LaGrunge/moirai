@@ -1,0 +1,129 @@
+/* Config dropdown styles */
+
+.config-select-wrapper {
+    position: relative;
+    min-width: 300px;
+    max-width: 500px;
+    flex: 1;
+}
+
+.config-select-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+}
+
+.config-select-btn:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+.config-select-btn .config-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.config-select-btn .config-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.config-select-btn .config-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 400px;
+}
+
+.config-select-btn .dropdown-arrow {
+    font-size: 0.7rem;
+    opacity: 0.7;
+}
+
+.config-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 100%;
+    width: max-content;
+    margin-top: 4px;
+    background-color: var(--card-bg);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.config-dropdown.open {
+    display: block;
+}
+
+.config-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    color: var(--text-color);
+}
+
+.config-dropdown-item:hover {
+    background-color: var(--tabs-bg);
+}
+
+.config-dropdown-item.selected {
+    background-color: rgba(74, 144, 217, 0.15);
+}
+
+.config-dropdown-item .config-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+.config-dropdown-item .config-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.config-dropdown-item .config-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.config-dropdown-item .config-name {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.config-dropdown-item .config-details {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.config-dropdown-empty {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}

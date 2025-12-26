@@ -1,0 +1,324 @@
+/* Cards - build cards, branches toolbar, status badges */
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Branches toolbar */
+.branches-toolbar {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.branch-filter {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+}
+
+.branch-filter:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.branch-filter::placeholder {
+    color: var(--text-secondary);
+}
+
+.sort-buttons {
+    display: flex;
+    gap: 0.25rem;
+    background-color: var(--card-bg);
+    border-radius: 6px;
+    padding: 0.25rem;
+}
+
+.sort-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.85rem;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.sort-btn:hover {
+    background-color: var(--tabs-bg);
+    color: var(--text-color);
+}
+
+.sort-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Card */
+.card {
+    background-color: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.branch-icon {
+    font-size: 1.2rem;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.build-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.build-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.build-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.build-value {
+    font-weight: 500;
+}
+
+/* Status badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-success {
+    background-color: rgba(40, 167, 69, 0.15);
+    color: var(--success-color);
+}
+
+.status-failure {
+    background-color: rgba(220, 53, 69, 0.15);
+    color: var(--failure-color);
+}
+
+.status-pending {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #b38600;
+}
+
+.status-running {
+    background-color: rgba(23, 162, 184, 0.15);
+    color: var(--running-color);
+}
+
+.status-killed {
+    background-color: rgba(108, 117, 125, 0.15);
+    color: #6c757d;
+}
+
+.status-skipped {
+    background-color: rgba(108, 117, 125, 0.15);
+    color: #6c757d;
+}
+
+.status-blocked {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #b38600;
+}
+
+.status-declined {
+    background-color: rgba(220, 53, 69, 0.15);
+    color: var(--failure-color);
+}
+
+.status-error {
+    background-color: rgba(220, 53, 69, 0.15);
+    color: var(--failure-color);
+}
+
+/* Card footer */
+.card-footer {
+    padding: 0.75rem 1.25rem;
+    background-color: var(--card-footer-bg);
+    border-top: 1px solid var(--border-color);
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.commit-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    overflow: hidden;
+}
+
+.commit-sha {
+    font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+    background-color: var(--commit-sha-bg);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+}
+
+a.commit-sha:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.pr-link {
+    font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+.pr-link:hover {
+    background-color: #3a7bc8;
+}
+
+.commit-message {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+}
+
+.cron-type {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: normal;
+}
+
+/* Card wrapper for stats */
+.card-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background-color: var(--card-footer-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+.stats-toggle-btn {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--card-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.stats-toggle-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.stats-toggle-btn.active {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+/* Loading and error states */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem;
+    grid-column: 1 / -1;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.error-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: var(--failure-color);
+    background-color: rgba(220, 53, 69, 0.1);
+    border-radius: 8px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .cards-container {
+        grid-template-columns: 1fr;
+    }
+}

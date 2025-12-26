@@ -170,59 +170,53 @@ function selectConfig(configId) {
     }
 }
 
-// Load overview data
-async function loadOverview() {
-    if (!state.currentServer || !state.currentRepo) {
-        showPlaceholder(elements.overviewContent, 'Select a repository to view overview');
-        return;
-    }
+// Generic tab loader to reduce duplication
+function createTabLoader(container, loadFn, renderFn, initHandlerFn, loadingClass, placeholderText) {
+    return async function() {
+        if (!state.currentServer || !state.currentRepo) {
+            showPlaceholder(container, placeholderText);
+            return;
+        }
 
-    elements.overviewContent.innerHTML = '<div class="overview-loading">Loading overview...</div>';
+        container.innerHTML = `<div class="${loadingClass}">Loading...</div>`;
 
-    try {
-        const stats = await loadOverviewData();
-        renderOverview(elements.overviewContent, stats);
-        initOverviewPeriodHandler(elements.overviewContent);
-    } catch (error) {
-        elements.overviewContent.innerHTML = `<div class="overview-error">Failed to load overview: ${error.message}</div>`;
-    }
+        try {
+            const data = await loadFn();
+            renderFn(container, data);
+            if (initHandlerFn) initHandlerFn(container);
+        } catch (error) {
+            container.innerHTML = `<div class="${loadingClass.replace('loading', 'error')}">Failed to load: ${error.message}</div>`;
+        }
+    };
 }
 
-// Load infrastructure data
-async function loadInfrastructure() {
-    if (!state.currentServer || !state.currentRepo) {
-        showPlaceholder(elements.infraContent, 'Select a repository to view infrastructure details');
-        return;
-    }
+// Tab loaders using factory pattern
+const loadOverview = createTabLoader(
+    elements.overviewContent,
+    loadOverviewData,
+    renderOverview,
+    initOverviewPeriodHandler,
+    'overview-loading',
+    'Select a repository to view overview'
+);
 
-    elements.infraContent.innerHTML = '<div class="infra-loading">Loading infrastructure data...</div>';
+const loadInfrastructure = createTabLoader(
+    elements.infraContent,
+    loadInfrastructureData,
+    renderInfrastructure,
+    initInfraPeriodHandler,
+    'infra-loading',
+    'Select a repository to view infrastructure details'
+);
 
-    try {
-        const stats = await loadInfrastructureData();
-        renderInfrastructure(elements.infraContent, stats);
-        initInfraPeriodHandler(elements.infraContent);
-    } catch (error) {
-        elements.infraContent.innerHTML = `<div class="infra-error">Failed to load infrastructure: ${error.message}</div>`;
-    }
-}
-
-// Load contributors data
-async function loadContributors() {
-    if (!state.currentServer || !state.currentRepo) {
-        showPlaceholder(elements.contributorsContent, 'Select a repository to view contributors');
-        return;
-    }
-
-    elements.contributorsContent.innerHTML = '<div class="contrib-loading">Loading contributors data...</div>';
-
-    try {
-        const stats = await loadContributorsData();
-        renderContributors(elements.contributorsContent, stats);
-        initContribPeriodHandler(elements.contributorsContent);
-    } catch (error) {
-        elements.contributorsContent.innerHTML = `<div class="contrib-error">Failed to load contributors: ${error.message}</div>`;
-    }
-}
+const loadContributors = createTabLoader(
+    elements.contributorsContent,
+    loadContributorsData,
+    renderContributors,
+    initContribPeriodHandler,
+    'contrib-loading',
+    'Select a repository to view contributors'
+);
 
 // Load initial data
 async function loadData() {

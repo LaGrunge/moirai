@@ -1,0 +1,178 @@
+/* Base styles - reset, variables, typography, layout */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-color: #4a90d9;
+    --primary-color-rgb: 74, 144, 217;
+    --success-color: #28a745;
+    --failure-color: #dc3545;
+    --pending-color: #ffc107;
+    --running-color: #17a2b8;
+    --bg-color: #f5f7fa;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+    --text-secondary: #666666;
+    --border-color: #e1e4e8;
+    --header-bg: #2c3e50;
+    --tabs-bg: #ffffff;
+    --card-footer-bg: rgba(0, 0, 0, 0.02);
+    --commit-sha-bg: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] {
+    --primary-color: #5ba0e8;
+    --primary-color-rgb: 91, 160, 232;
+    --success-color: #3dd56d;
+    --failure-color: #f55a6a;
+    --pending-color: #ffd43b;
+    --running-color: #22d3ee;
+    --bg-color: #1a1a2e;
+    --card-bg: #16213e;
+    --text-color: #e4e4e7;
+    --text-secondary: #a1a1aa;
+    --border-color: #2d3748;
+    --header-bg: #0f0f23;
+    --tabs-bg: #16213e;
+    --card-footer-bg: rgba(255, 255, 255, 0.02);
+    --commit-sha-bg: rgba(255, 255, 255, 0.1);
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    background-color: var(--header-bg);
+    color: white;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo {
+    height: 48px;
+    width: auto;
+}
+
+.header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Tabs */
+.tabs {
+    background-color: var(--tabs-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 2rem;
+    display: flex;
+    gap: 0;
+}
+
+.tab-btn {
+    padding: 1rem 2rem;
+    border: none;
+    background: none;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: var(--primary-color);
+    background-color: rgba(74, 144, 217, 0.05);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* Content */
+.content {
+    flex: 1;
+    padding: 2rem;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Common utilities */
+.placeholder {
+    text-align: center;
+    padding: 3rem;
+    color: var(--text-secondary);
+}
+
+.no-data {
+    text-align: center;
+    padding: 20px;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Status colors */
+.status-success { color: var(--success-color); }
+.status-failure, .status-error { color: var(--failure-color); }
+.status-running { color: var(--running-color); }
+.status-pending { color: var(--pending-color); }
+.status-killed { color: #6c757d; }
+.status-skipped { color: #adb5bd; }
+
+/* Status badges */
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.status-success {
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.status-badge.status-failure,
+.status-badge.status-error {
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.status-badge.status-running {
+    background-color: rgba(23, 162, 184, 0.1);
+}
+
+.status-badge.status-pending {
+    background-color: rgba(255, 193, 7, 0.1);
+}
