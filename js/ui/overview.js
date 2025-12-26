@@ -3,7 +3,7 @@
 import { state } from '../state.js';
 import { fetchBuildsForPeriod } from '../api.js';
 import { normalizeBuild } from '../builds.js';
-import { formatSeconds } from '../utils.js';
+import { formatSeconds, formatTimeAgo, escapeHtml } from '../utils.js';
 import { getDefaultStatsPeriod } from '../stats.js';
 
 // Store overview data for toggle functionality
@@ -73,6 +73,9 @@ function calculateOverviewStats(builds, periodDays) {
 
     // Group builds by day for trend charts
     const dailyStats = {};
+    
+    // Group builds by branch for breakdown
+    const branchStats = {};
 
     builds.forEach(build => {
         if (statusCounts.hasOwnProperty(build.status)) {
@@ -94,6 +97,28 @@ function calculateOverviewStats(builds, periodDays) {
         if (build.started && build.finished) {
             dailyStats[date].totalDuration += build.finished - build.started;
             dailyStats[date].finishedCount++;
+        }
+        
+        // Group by branch
+        const branch = build.branch || build.target || 'unknown';
+        if (!branchStats[branch]) {
+            branchStats[branch] = { 
+                branch, 
+                total: 0, 
+                success: 0, 
+                failure: 0,
+                lastBuild: null,
+                lastStatus: null
+            };
+        }
+        branchStats[branch].total++;
+        if (build.status === 'success') branchStats[branch].success++;
+        if (build.status === 'failure' || build.status === 'error') branchStats[branch].failure++;
+        
+        // Track last build
+        if (!branchStats[branch].lastBuild || build.created > branchStats[branch].lastBuild.created) {
+            branchStats[branch].lastBuild = build;
+            branchStats[branch].lastStatus = build.status;
         }
     });
 
@@ -146,6 +171,19 @@ function calculateOverviewStats(builds, periodDays) {
                 : 0
         }));
 
+    // Generate branch breakdown (sorted by last build time, failed first)
+    const branchBreakdown = Object.values(branchStats)
+        .map(b => ({
+            ...b,
+            successRate: b.total > 0 ? Math.round((b.success / b.total) * 100) : 0
+        }))
+        .sort((a, b) => {
+            // Failed branches first, then by last build time
+            if (a.lastStatus !== 'success' && b.lastStatus === 'success') return -1;
+            if (a.lastStatus === 'success' && b.lastStatus !== 'success') return 1;
+            return (b.lastBuild?.created || 0) - (a.lastBuild?.created || 0);
+        });
+
     return {
         totalBuilds,
         successRate,
@@ -156,7 +194,8 @@ function calculateOverviewStats(builds, periodDays) {
         healthText,
         buildsPerDay,
         periodDays,
-        trendData
+        trendData,
+        branchBreakdown
     };
 }
 
@@ -178,8 +217,8 @@ export function renderOverview(container, stats) {
     // Calculate pie chart segments
     const pieData = generatePieChartData(stats.statusCounts, stats.totalBuilds);
 
-    const headBuildsDisabled = !stats.hasCronBuilds;
-    const headBuildsTooltip = headBuildsDisabled 
+    const cronBuildsDisabled = !stats.hasCronBuilds;
+    const cronBuildsTooltip = cronBuildsDisabled 
         ? 'No cron/scheduled builds available' 
         : 'Show only cron/scheduled builds (release branches)';
     const allBuildsTooltip = 'Show all builds from all branches';
@@ -197,11 +236,11 @@ export function renderOverview(container, stats) {
                                 id="toggle-all-builds" title="${allBuildsTooltip}">
                             All builds
                         </button>
-                        <button class="builds-toggle ${stats.isHeadBuilds ? 'active' : ''} ${headBuildsDisabled ? 'disabled' : ''}" 
-                                id="toggle-head-builds" 
-                                title="${headBuildsTooltip}"
-                                ${headBuildsDisabled ? 'disabled' : ''}>
-                            Head builds
+                        <button class="builds-toggle ${stats.isHeadBuilds ? 'active' : ''} ${cronBuildsDisabled ? 'disabled' : ''}" 
+                                id="toggle-cron-builds" 
+                                title="${cronBuildsTooltip}"
+                                ${cronBuildsDisabled ? 'disabled' : ''}>
+                            Cron builds
                         </button>
                     </div>
                     <select class="period-select" id="overview-period">
@@ -242,6 +281,16 @@ export function renderOverview(container, stats) {
                         ${renderPieLegend(pieData)}
                     </div>
                 </div>
+
+                ${stats.branchBreakdown.length > 0 ? `
+                <div class="chart-card branch-breakdown-card">
+                    <h3>🎯 ${stats.isHeadBuilds ? 'Cron' : 'All'} Builds by Branch</h3>
+                    <div class="branch-breakdown-list">
+                        ${renderBranchBreakdown(stats.branchBreakdown)}
+                    </div>
+                </div>
+                ` : ''}
+
                 <div class="chart-card">
                     <h3>Build Activity (per day)</h3>
                     ${renderBarChart(stats.trendData, 'total', 'Builds')}
@@ -289,6 +338,41 @@ function generatePieChartData(statusCounts, total) {
             label: labels[status] || status
         }))
         .sort((a, b) => b.count - a.count);
+}
+
+// Render branch breakdown for builds
+function renderBranchBreakdown(branches) {
+    return branches.map(b => {
+        // Status class based on success rate (not last build status)
+        // Green: >= 80%, Yellow: >= 50%, Red: < 50%
+        const statusClass = b.successRate >= 80 ? 'success' : 
+                           b.successRate >= 50 ? 'warning' : 'failure';
+        
+        // SVG icons for consistent sizing
+        const statusIcon = statusClass === 'success' 
+            ? `<svg class="status-icon" viewBox="0 0 16 16" fill="var(--success-color)"><path d="M8 16A8 8 0 1 1 8 0a8 8 0 0 1 0 16zm3.78-9.72a.75.75 0 0 0-1.06-1.06L6.75 9.19 5.28 7.72a.75.75 0 0 0-1.06 1.06l2 2a.75.75 0 0 0 1.06 0l4.5-4.5z"/></svg>`
+            : statusClass === 'warning'
+            ? `<svg class="status-icon" viewBox="0 0 16 16" fill="var(--pending-color)"><path d="M8 16A8 8 0 1 1 8 0a8 8 0 0 1 0 16zM8 4a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0v-3.5A.75.75 0 0 0 8 4zm0 8a1 1 0 1 0 0-2 1 1 0 0 0 0 2z"/></svg>`
+            : `<svg class="status-icon" viewBox="0 0 16 16" fill="var(--failure-color)"><path d="M8 16A8 8 0 1 1 8 0a8 8 0 0 1 0 16zm2.22-10.22a.75.75 0 0 0-1.06-1.06L8 5.94 6.84 4.78a.75.75 0 0 0-1.06 1.06L6.94 7 5.78 8.16a.75.75 0 1 0 1.06 1.06L8 8.06l1.16 1.16a.75.75 0 1 0 1.06-1.06L9.06 7l1.16-1.22z"/></svg>`;
+        
+        const lastBuildTime = b.lastBuild ? formatTimeAgo(b.lastBuild.created) : 'N/A';
+        
+        return `
+            <div class="branch-breakdown-item status-${statusClass}">
+                <div class="branch-status-icon">${statusIcon}</div>
+                <div class="branch-info">
+                    <div class="branch-name">${escapeHtml(b.branch)}</div>
+                    <div class="branch-stats">
+                        ${b.success}/${b.total} passed (${b.successRate}%) · Last: ${lastBuildTime}
+                    </div>
+                </div>
+                <div class="branch-bar">
+                    <div class="branch-bar-fill success" style="width: ${b.successRate}%"></div>
+                    <div class="branch-bar-fill failure" style="width: ${100 - b.successRate}%"></div>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 // Render SVG pie chart
@@ -493,7 +577,7 @@ export function initOverviewPeriodHandler(container) {
     
     // Build type toggle handlers
     const toggleAllBuilds = container.querySelector('#toggle-all-builds');
-    const toggleHeadBuilds = container.querySelector('#toggle-head-builds');
+    const toggleCronBuilds = container.querySelector('#toggle-cron-builds');
     
     if (toggleAllBuilds) {
         toggleAllBuilds.addEventListener('click', () => {
@@ -506,8 +590,8 @@ export function initOverviewPeriodHandler(container) {
         });
     }
     
-    if (toggleHeadBuilds && !toggleHeadBuilds.disabled) {
-        toggleHeadBuilds.addEventListener('click', () => {
+    if (toggleCronBuilds && !toggleCronBuilds.disabled) {
+        toggleCronBuilds.addEventListener('click', () => {
             if (!state.overviewHeadBuilds) {
                 state.overviewHeadBuilds = true;
                 const stats = recalculateOverviewStats();

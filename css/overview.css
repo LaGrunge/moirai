@@ -258,7 +258,97 @@
     .chart-card {
         padding: 16px;
     }
+}
 
+/* Branch breakdown for cron builds */
+.branch-breakdown-card {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 24px;
+}
+
+.branch-breakdown-card h3 {
+    margin: 0 0 16px 0;
+    color: var(--text-color);
+}
+
+.branch-breakdown-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.branch-breakdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    transition: border-color 0.15s;
+}
+
+.branch-breakdown-item.status-failure {
+    border-left: 4px solid var(--failure-color);
+}
+
+.branch-breakdown-item.status-success {
+    border-left: 4px solid var(--success-color);
+}
+
+.branch-breakdown-item.status-warning {
+    border-left: 4px solid var(--pending-color);
+}
+
+.branch-status-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.branch-status-icon .status-icon {
+    width: 24px;
+    height: 24px;
+}
+
+.branch-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.branch-name {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 4px;
+}
+
+.branch-stats {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.branch-bar {
+    width: 100px;
+    height: 8px;
+    display: flex;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: var(--border-color);
+}
+
+.branch-bar-fill.success {
+    background-color: var(--success-color);
+}
+
+.branch-bar-fill.failure {
+    background-color: var(--failure-color);
+}
+
+@media (max-width: 600px) {
     .chart-card h3 {
         font-size: 0.95rem;
     }
