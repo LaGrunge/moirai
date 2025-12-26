@@ -13,6 +13,7 @@ import { renderBranchCards, renderCronCards } from './ui/cards.js';
 import { showLoading, showPlaceholder, showError } from './ui/common.js';
 import { initDemoMode, loadDemoData } from './demo.js';
 import { loadOverviewData, renderOverview, initOverviewPeriodHandler } from './ui/overview.js';
+import { loadInfrastructureData, renderInfrastructure, initInfraPeriodHandler } from './ui/infrastructure.js';
 
 // DOM Elements
 const elements = {
@@ -21,6 +22,7 @@ const elements = {
     branchesCards: document.getElementById('branches-cards'),
     cronCards: document.getElementById('cron-cards'),
     overviewContent: document.getElementById('overview-content'),
+    infraContent: document.getElementById('infra-content'),
     tabButtons: document.querySelectorAll('.tab-btn'),
     tabContents: document.querySelectorAll('.tab-content'),
     themeToggle: document.getElementById('theme-toggle'),
@@ -58,6 +60,7 @@ function getDemoCallbacks() {
         loadBranchBuilds,
         loadCronBuilds,
         loadOverview,
+        loadInfrastructure,
         populateConfigDropdown: () => populateConfigDropdown(elements.configDropdown, selectConfig),
         updateConfigSelectButton: () => updateConfigSelectButton(elements.configSelectBtn),
         elements
@@ -147,6 +150,7 @@ function selectConfig(configId) {
             loadBranchBuilds();
             loadCronBuilds();
             loadOverview();
+            loadInfrastructure();
         }
     } else {
         state.currentConfig = null;
@@ -157,6 +161,7 @@ function selectConfig(configId) {
         showPlaceholder(elements.branchesCards, 'Select a repository from the dropdown');
         showPlaceholder(elements.cronCards, 'Select a repository from the dropdown');
         showPlaceholder(elements.overviewContent, 'Select a repository to view overview');
+        showPlaceholder(elements.infraContent, 'Select a repository to view infrastructure details');
     }
 }
 
@@ -175,6 +180,24 @@ async function loadOverview() {
         initOverviewPeriodHandler(elements.overviewContent);
     } catch (error) {
         elements.overviewContent.innerHTML = `<div class="overview-error">Failed to load overview: ${error.message}</div>`;
+    }
+}
+
+// Load infrastructure data
+async function loadInfrastructure() {
+    if (!state.currentServer || !state.currentRepo) {
+        showPlaceholder(elements.infraContent, 'Select a repository to view infrastructure details');
+        return;
+    }
+
+    elements.infraContent.innerHTML = '<div class="infra-loading">Loading infrastructure data...</div>';
+
+    try {
+        const stats = await loadInfrastructureData();
+        renderInfrastructure(elements.infraContent, stats);
+        initInfraPeriodHandler(elements.infraContent);
+    } catch (error) {
+        elements.infraContent.innerHTML = `<div class="infra-error">Failed to load infrastructure: ${error.message}</div>`;
     }
 }
 

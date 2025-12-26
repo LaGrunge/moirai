@@ -36,6 +36,7 @@
         <button class="tab-btn" data-tab="overview">📊 Overview</button>
         <button class="tab-btn active" data-tab="branches">Branches</button>
         <button class="tab-btn" data-tab="cron">Cron Builds</button>
+        <button class="tab-btn" data-tab="infra">🔧 Infrastructure</button>
         <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
     </nav>
 
@@ -63,6 +64,12 @@
         <div id="cron-tab" class="tab-content">
             <div class="cards-container" id="cron-cards">
                 <div class="placeholder">Select a repository to view cron builds</div>
+            </div>
+        </div>
+
+        <div id="infra-tab" class="tab-content">
+            <div id="infra-content" class="infra-content">
+                <div class="placeholder">Select a repository to view infrastructure details</div>
             </div>
         </div>
 
