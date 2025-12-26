@@ -50,6 +50,52 @@
 
 /* .overview-period-select - uses .period-select from base.css */
 
+/* Overview toggles container */
+.overview-toggles {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Build type toggle group */
+.builds-toggle-group {
+    display: flex;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.builds-toggle {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.builds-toggle:first-child {
+    border-right: 1px solid var(--border-color);
+}
+
+.builds-toggle:hover:not(.disabled) {
+    background-color: var(--tabs-bg);
+    color: var(--text-color);
+}
+
+.builds-toggle.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.builds-toggle.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .overview-kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);

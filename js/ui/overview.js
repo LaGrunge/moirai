@@ -5,7 +5,11 @@ import { fetchBuildsForPeriod } from '../api.js';
 import { normalizeBuild } from '../builds.js';
 import { formatSeconds } from '../utils.js';
 import { getDefaultStatsPeriod } from '../stats.js';
-import { createPeriodHandler } from './periodHandler.js';
+
+// Store overview data for toggle functionality
+let overviewAllBuilds = [];
+let overviewCronBuilds = [];
+let overviewPeriodDays = 30;
 
 // Load overview data for current repository
 export async function loadOverviewData(periodDays = null) {
@@ -19,8 +23,37 @@ export async function loadOverviewData(periodDays = null) {
 
     const rawBuilds = await fetchBuildsForPeriod(periodDays);
     const builds = rawBuilds.map(normalizeBuild);
+    
+    // Store for toggle functionality
+    overviewAllBuilds = builds;
+    overviewCronBuilds = builds.filter(b => b.event === 'cron');
+    overviewPeriodDays = periodDays;
+    
+    // Determine which builds to use based on toggle state and availability
+    const hasCronBuilds = overviewCronBuilds.length > 0;
+    
+    // If no cron builds, force to all builds mode
+    if (!hasCronBuilds) {
+        state.overviewHeadBuilds = false;
+    }
+    
+    const buildsToUse = state.overviewHeadBuilds ? overviewCronBuilds : builds;
 
-    return calculateOverviewStats(builds, periodDays);
+    return {
+        ...calculateOverviewStats(buildsToUse, periodDays),
+        hasCronBuilds,
+        isHeadBuilds: state.overviewHeadBuilds
+    };
+}
+
+// Recalculate stats when toggle changes (without refetching)
+export function recalculateOverviewStats() {
+    const buildsToUse = state.overviewHeadBuilds ? overviewCronBuilds : overviewAllBuilds;
+    return {
+        ...calculateOverviewStats(buildsToUse, overviewPeriodDays),
+        hasCronBuilds: overviewCronBuilds.length > 0,
+        isHeadBuilds: state.overviewHeadBuilds
+    };
 }
 
 // Calculate overview statistics
@@ -145,6 +178,12 @@ export function renderOverview(container, stats) {
     // Calculate pie chart segments
     const pieData = generatePieChartData(stats.statusCounts, stats.totalBuilds);
 
+    const headBuildsDisabled = !stats.hasCronBuilds;
+    const headBuildsTooltip = headBuildsDisabled 
+        ? 'No cron/scheduled builds available' 
+        : 'Show only cron/scheduled builds (release branches)';
+    const allBuildsTooltip = 'Show all builds from all branches';
+
     container.innerHTML = `
         <div class="overview-container">
             <div class="overview-header">
@@ -152,12 +191,26 @@ export function renderOverview(container, stats) {
                     <span class="health-icon">${stats.healthColor}</span>
                     <span class="health-text">${stats.healthText}</span>
                 </div>
-                <select class="period-select" id="overview-period">
-                    <option value="7" ${stats.periodDays === 7 ? 'selected' : ''}>Last 7 days</option>
-                    <option value="14" ${stats.periodDays === 14 ? 'selected' : ''}>Last 14 days</option>
-                    <option value="30" ${stats.periodDays === 30 ? 'selected' : ''}>Last 30 days</option>
-                    <option value="90" ${stats.periodDays === 90 ? 'selected' : ''}>Last 90 days</option>
-                </select>
+                <div class="overview-toggles">
+                    <div class="builds-toggle-group">
+                        <button class="builds-toggle ${!stats.isHeadBuilds ? 'active' : ''}" 
+                                id="toggle-all-builds" title="${allBuildsTooltip}">
+                            All builds
+                        </button>
+                        <button class="builds-toggle ${stats.isHeadBuilds ? 'active' : ''} ${headBuildsDisabled ? 'disabled' : ''}" 
+                                id="toggle-head-builds" 
+                                title="${headBuildsTooltip}"
+                                ${headBuildsDisabled ? 'disabled' : ''}>
+                            Head builds
+                        </button>
+                    </div>
+                    <select class="period-select" id="overview-period">
+                        <option value="7" ${stats.periodDays === 7 ? 'selected' : ''}>Last 7 days</option>
+                        <option value="14" ${stats.periodDays === 14 ? 'selected' : ''}>Last 14 days</option>
+                        <option value="30" ${stats.periodDays === 30 ? 'selected' : ''}>Last 30 days</option>
+                        <option value="90" ${stats.periodDays === 90 ? 'selected' : ''}>Last 90 days</option>
+                    </select>
+                </div>
             </div>
 
             <div class="overview-kpi-grid">
@@ -419,10 +472,48 @@ function renderLineChart(trendData, field, unit) {
     `;
 }
 
-// Period handler using shared factory
-export const initOverviewPeriodHandler = createPeriodHandler({
-    selectId: 'overview-period',
-    loadingText: 'Loading...',
-    loadData: loadOverviewData,
-    render: renderOverview
-});
+// Initialize overview handlers (period select + build type toggle)
+export function initOverviewPeriodHandler(container) {
+    // Period select handler
+    const periodSelect = container.querySelector('#overview-period');
+    if (periodSelect) {
+        periodSelect.addEventListener('change', async (e) => {
+            const newPeriod = parseInt(e.target.value);
+            container.innerHTML = `<div class="tab-loading">Loading...</div>`;
+            
+            try {
+                const data = await loadOverviewData(newPeriod);
+                renderOverview(container, data);
+                initOverviewPeriodHandler(container);
+            } catch (error) {
+                container.innerHTML = `<div class="tab-error">Failed to load data: ${error.message}</div>`;
+            }
+        });
+    }
+    
+    // Build type toggle handlers
+    const toggleAllBuilds = container.querySelector('#toggle-all-builds');
+    const toggleHeadBuilds = container.querySelector('#toggle-head-builds');
+    
+    if (toggleAllBuilds) {
+        toggleAllBuilds.addEventListener('click', () => {
+            if (state.overviewHeadBuilds) {
+                state.overviewHeadBuilds = false;
+                const stats = recalculateOverviewStats();
+                renderOverview(container, stats);
+                initOverviewPeriodHandler(container);
+            }
+        });
+    }
+    
+    if (toggleHeadBuilds && !toggleHeadBuilds.disabled) {
+        toggleHeadBuilds.addEventListener('click', () => {
+            if (!state.overviewHeadBuilds) {
+                state.overviewHeadBuilds = true;
+                const stats = recalculateOverviewStats();
+                renderOverview(container, stats);
+                initOverviewPeriodHandler(container);
+            }
+        });
+    }
+}

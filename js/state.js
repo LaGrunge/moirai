@@ -22,6 +22,7 @@ export const state = {
     branchFilter: '',
     showBranches: true,        // Toggle branches visibility
     showPRs: true,             // Toggle PRs visibility
+    overviewHeadBuilds: true,  // Toggle: true = head/cron builds, false = all builds
     lastBranchBuilds: [],
     
     // Settings
