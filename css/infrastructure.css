@@ -232,6 +232,127 @@
     padding: 8px;
 }
 
+/* Cost Summary Card */
+.infra-card.highlight-card {
+    background: linear-gradient(135deg, var(--card-bg) 0%, var(--bg-color) 100%);
+    border-color: var(--primary-color);
+    border-width: 2px;
+}
+
+.cost-summary {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 12px;
+}
+
+.cost-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.cost-item.main .cost-value {
+    font-size: 2rem;
+    color: var(--success-color);
+}
+
+.cost-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+}
+
+.cost-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.cost-note {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+/* Branch Costs List */
+.branch-costs-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.branch-cost-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background-color: var(--bg-color);
+    border-radius: 6px;
+}
+
+.branch-cost-name {
+    font-weight: 500;
+    color: var(--text-color);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.branch-cost-stats {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.branch-cost-value {
+    font-weight: 600;
+    color: var(--success-color);
+    white-space: nowrap;
+}
+
+/* Expensive Builds Table */
+.expensive-builds-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.expensive-builds-table th,
+.expensive-builds-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.expensive-builds-table th {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+}
+
+.expensive-builds-table .cost-cell {
+    font-weight: 600;
+    color: var(--success-color);
+}
+
+/* Infrastructure Footer */
+.infra-footer {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.infra-warning {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    padding: 12px 16px;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    border-left: 3px solid var(--pending-color);
+}
+
 /* .infra-loading, .infra-error, .infra-placeholder - use .tab-* from base.css */
 
 /* Responsive Infrastructure */

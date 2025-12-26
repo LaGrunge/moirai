@@ -23,8 +23,14 @@ export async function loadInfrastructureData(periodDays = null) {
     return calculateInfraStats(builds, periodDays);
 }
 
+// Get cost per CPU hour from settings
+function getCpuCostPerHour() {
+    return state.settings.cpuCostPerHour || 0.05;
+}
+
 // Calculate infrastructure statistics
 function calculateInfraStats(builds, periodDays) {
+    const cpuCostPerHour = getCpuCostPerHour();
     // Current queue (running + pending)
     const queuedBuilds = builds.filter(b => b.status === 'running' || b.status === 'pending');
     const runningBuilds = builds.filter(b => b.status === 'running');
@@ -36,6 +42,13 @@ function calculateInfraStats(builds, periodDays) {
         ...b,
         duration: b.finished - b.started
     }));
+    
+    // Calculate total CPU time (sum of all build durations)
+    const totalCpuSeconds = durations.reduce((sum, d) => sum + d.duration, 0);
+    const totalCpuHours = totalCpuSeconds / 3600;
+    
+    // Estimate cost (configurable rate)
+    const estimatedCost = totalCpuHours * cpuCostPerHour;
 
     // Calculate percentiles for anomaly detection
     const sortedDurations = durations.map(d => d.duration).sort((a, b) => a - b);
@@ -89,6 +102,36 @@ function calculateInfraStats(builds, periodDays) {
         const hour = new Date(b.created * 1000).getHours();
         hourlyDistribution[hour]++;
     });
+    
+    // Most expensive builds (by duration/cost)
+    const mostExpensiveBuilds = durations
+        .map(d => ({
+            ...d,
+            cost: (d.duration / 3600) * cpuCostPerHour
+        }))
+        .sort((a, b) => b.duration - a.duration)
+        .slice(0, 10);
+    
+    // Cost by branch
+    const costByBranch = {};
+    durations.forEach(d => {
+        const branch = d.branch || 'unknown';
+        if (!costByBranch[branch]) {
+            costByBranch[branch] = { branch, totalSeconds: 0, buildCount: 0 };
+        }
+        costByBranch[branch].totalSeconds += d.duration;
+        costByBranch[branch].buildCount++;
+    });
+    
+    const branchCosts = Object.values(costByBranch)
+        .map(b => ({
+            ...b,
+            totalHours: b.totalSeconds / 3600,
+            cost: (b.totalSeconds / 3600) * cpuCostPerHour,
+            avgDuration: b.totalSeconds / b.buildCount
+        }))
+        .sort((a, b) => b.cost - a.cost)
+        .slice(0, 10);
 
     return {
         periodDays,
@@ -101,6 +144,8 @@ function calculateInfraStats(builds, periodDays) {
         longBuilds,
         problemBranches,
         recentFailures,
+        mostExpensiveBuilds,
+        branchCosts,
         durations: {
             p50,
             p90,
@@ -109,7 +154,13 @@ function calculateInfraStats(builds, periodDays) {
                 ? Math.round(sortedDurations.reduce((a, b) => a + b, 0) / sortedDurations.length)
                 : 0
         },
-        hourlyDistribution
+        hourlyDistribution,
+        cpuStats: {
+            totalSeconds: totalCpuSeconds,
+            totalHours: totalCpuHours,
+            estimatedCost,
+            costPerHour: cpuCostPerHour
+        }
     };
 }
 
@@ -124,6 +175,9 @@ export function renderInfrastructure(container, stats) {
         return;
     }
 
+    const cpuHoursDisplay = stats.cpuStats.totalHours.toFixed(1);
+    const costDisplay = stats.cpuStats.estimatedCost.toFixed(2);
+    
     container.innerHTML = `
         <div class="infra-container">
             <div class="infra-header">
@@ -137,6 +191,28 @@ export function renderInfrastructure(container, stats) {
             </div>
 
             <div class="infra-grid">
+                <!-- CPU & Cost Summary -->
+                <div class="infra-card highlight-card">
+                    <h3>💰 Resource Usage & Cost</h3>
+                    <div class="cost-summary">
+                        <div class="cost-item main">
+                            <span class="cost-value">$${costDisplay}</span>
+                            <span class="cost-label">Estimated Cost</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="cost-value">${cpuHoursDisplay}h</span>
+                            <span class="cost-label">CPU Time</span>
+                        </div>
+                        <div class="cost-item">
+                            <span class="cost-value">${stats.totalBuilds}</span>
+                            <span class="cost-label">Total Builds</span>
+                        </div>
+                    </div>
+                    <div class="cost-note">
+                        Based on $${stats.cpuStats.costPerHour}/CPU-hour
+                    </div>
+                </div>
+
                 <!-- Queue Status -->
                 <div class="infra-card">
                     <h3>📋 Current Queue</h3>
@@ -176,16 +252,22 @@ export function renderInfrastructure(container, stats) {
                     </div>
                 </div>
 
+                <!-- Most Expensive Branches -->
+                <div class="infra-card">
+                    <h3>💸 Most Expensive Branches</h3>
+                    ${renderBranchCosts(stats.branchCosts)}
+                </div>
+
                 <!-- Problem Branches -->
                 <div class="infra-card">
                     <h3>⚠️ Problem Branches</h3>
                     ${renderProblemBranches(stats.problemBranches)}
                 </div>
 
-                <!-- Long Builds -->
-                <div class="infra-card">
-                    <h3>🐢 Long Builds (> P90)</h3>
-                    ${renderLongBuilds(stats.longBuilds, stats.durations.p90)}
+                <!-- Most Expensive Builds -->
+                <div class="infra-card full-width">
+                    <h3>🐢 Most Expensive Builds</h3>
+                    ${renderExpensiveBuilds(stats.mostExpensiveBuilds)}
                 </div>
 
                 <!-- Recent Failures -->
@@ -198,6 +280,12 @@ export function renderInfrastructure(container, stats) {
                 <div class="infra-card full-width">
                     <h3>📊 Build Activity by Hour</h3>
                     ${renderHourlyChart(stats.hourlyDistribution)}
+                </div>
+            </div>
+            
+            <div class="infra-footer">
+                <div class="infra-warning">
+                    ℹ️ For more accurate cost data from AWS Auto Scaling, configure AWS credentials in server settings.
                 </div>
             </div>
         </div>
@@ -243,22 +331,54 @@ function renderProblemBranches(branches) {
     `;
 }
 
-// Render long builds
-function renderLongBuilds(builds, p90) {
-    if (builds.length === 0) {
-        return '<div class="empty-list">No anomalously long builds</div>';
+// Render branch costs
+function renderBranchCosts(branches) {
+    if (branches.length === 0) {
+        return '<div class="empty-list">No build data</div>';
     }
 
     return `
-        <div class="long-builds-list">
-            ${builds.map(b => `
-                <div class="long-build-item">
-                    <span class="long-build-number">#${b.number}</span>
-                    <span class="long-build-branch">${b.branch || 'N/A'}</span>
-                    <span class="long-build-duration">${formatSeconds(b.duration)}</span>
+        <div class="branch-costs-list">
+            ${branches.map(b => `
+                <div class="branch-cost-item">
+                    <span class="branch-cost-name">${b.branch}</span>
+                    <span class="branch-cost-stats">${b.buildCount} builds · ${formatSeconds(Math.round(b.avgDuration))} avg</span>
+                    <span class="branch-cost-value">$${b.cost.toFixed(2)}</span>
                 </div>
             `).join('')}
         </div>
+    `;
+}
+
+// Render expensive builds
+function renderExpensiveBuilds(builds) {
+    if (builds.length === 0) {
+        return '<div class="empty-list">No build data</div>';
+    }
+
+    return `
+        <table class="expensive-builds-table">
+            <thead>
+                <tr>
+                    <th>Build</th>
+                    <th>Branch</th>
+                    <th>Duration</th>
+                    <th>Cost</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${builds.map(b => `
+                    <tr>
+                        <td><span class="status-badge status-${b.status}">#${b.number}</span></td>
+                        <td>${b.branch || 'N/A'}</td>
+                        <td>${formatSeconds(b.duration)}</td>
+                        <td class="cost-cell">$${b.cost.toFixed(3)}</td>
+                        <td>${formatTimeAgo(b.created)}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
     `;
 }
 

@@ -33,8 +33,12 @@ export const state = {
     // Settings
     settings: {
         filterEmptyRepos: true,
-        statsPeriodDays: 30  // Default period for statistics
-    }
+        statsPeriodDays: 30,  // Default period for statistics
+        cpuCostPerHour: 0.05  // Cost per CPU-hour for estimation
+    },
+    
+    // AWS status (loaded from server)
+    awsEnabled: false
 };
 
 // Store original functions for restoration after demo mode

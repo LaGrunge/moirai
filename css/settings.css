@@ -54,6 +54,32 @@
     margin-top: 0.25rem;
 }
 
+/* AWS notice styling */
+.setting-item.aws-notice {
+    background-color: var(--bg-color);
+    padding: 12px 16px;
+    border-radius: 8px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.setting-item.aws-notice .setting-label {
+    color: var(--primary-color);
+}
+
+.setting-input {
+    padding: 0.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+.setting-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .settings-btn {
     padding: 0.5rem 1rem;
     font-size: 0.9rem;

@@ -156,6 +156,20 @@
                 </div>
 
                 <div class="settings-section">
+                    <h3>Cost Estimation</h3>
+                    <div class="setting-item" id="cpu-cost-setting">
+                        <label for="setting-cpu-cost" class="setting-label">CPU cost per hour ($)</label>
+                        <input type="number" id="setting-cpu-cost" class="form-input setting-input" 
+                               value="0.05" min="0" step="0.01" style="width: 100px;">
+                        <span class="setting-description">Cost per CPU-hour for build cost estimation</span>
+                    </div>
+                    <div class="setting-item aws-notice" id="aws-cost-notice" style="display: none;">
+                        <span class="setting-label">☁️ AWS Integration Active</span>
+                        <span class="setting-description">Cost data will be fetched from AWS. Manual cost setting is disabled.</span>
+                    </div>
+                </div>
+
+                <div class="settings-section">
                     <h3>Add Repository</h3>
                     <div class="add-config-form">
                         <div class="form-row">

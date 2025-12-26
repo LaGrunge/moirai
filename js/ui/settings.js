@@ -41,6 +41,23 @@ export function initSettings(elements, callbacks) {
             });
         });
     }
+    
+    // Initialize CPU cost setting
+    const cpuCostInput = document.getElementById('setting-cpu-cost');
+    const cpuCostSetting = document.getElementById('cpu-cost-setting');
+    const awsCostNotice = document.getElementById('aws-cost-notice');
+    
+    if (cpuCostInput) {
+        cpuCostInput.value = state.settings.cpuCostPerHour || 0.05;
+        cpuCostInput.addEventListener('change', (e) => {
+            const newCost = parseFloat(e.target.value) || 0.05;
+            state.settings.cpuCostPerHour = newCost;
+            saveSettings();
+        });
+    }
+    
+    // Check AWS status and update UI
+    checkAwsStatus(cpuCostSetting, awsCostNotice, cpuCostInput);
 
     // Handle clear cache button
     clearCacheBtn.addEventListener('click', () => {
@@ -177,6 +194,34 @@ export function populateAddConfigServerSelect(select) {
         option.textContent = `${server.name} (${server.type})`;
         select.appendChild(option);
     });
+}
+
+// Check AWS status and update cost setting UI
+async function checkAwsStatus(cpuCostSetting, awsCostNotice, cpuCostInput) {
+    if (!cpuCostSetting || !awsCostNotice) return;
+    
+    try {
+        const response = await fetch('/api/aws/status');
+        const data = await response.json();
+        
+        state.awsEnabled = data.enabled;
+        
+        if (data.enabled) {
+            // AWS is configured - disable manual cost setting
+            cpuCostSetting.style.display = 'none';
+            awsCostNotice.style.display = 'flex';
+            if (cpuCostInput) cpuCostInput.disabled = true;
+        } else {
+            // AWS not configured - show manual cost setting
+            cpuCostSetting.style.display = 'flex';
+            awsCostNotice.style.display = 'none';
+            if (cpuCostInput) cpuCostInput.disabled = false;
+        }
+    } catch (error) {
+        // If can't reach server, assume no AWS
+        console.log('Could not check AWS status:', error);
+        state.awsEnabled = false;
+    }
 }
 
 // Render saved configs list in settings
