@@ -83,6 +83,25 @@
                         PRs
                     </button>
                 </div>
+                <div class="status-filter-dropdown" id="branch-status-filter">
+                    <button class="status-filter-btn" type="button">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/>
+                        </svg>
+                        Status
+                        <svg class="dropdown-arrow" width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                            <path d="M2 3.5L5 6.5L8 3.5"/>
+                        </svg>
+                    </button>
+                    <div class="status-filter-menu">
+                        <label class="status-filter-item"><input type="checkbox" value="success" checked><span class="status-dot success"></span>Success</label>
+                        <label class="status-filter-item"><input type="checkbox" value="failure" checked><span class="status-dot failure"></span>Failure</label>
+                        <label class="status-filter-item"><input type="checkbox" value="running" checked><span class="status-dot running"></span>Running</label>
+                        <label class="status-filter-item"><input type="checkbox" value="pending" checked><span class="status-dot pending"></span>Pending</label>
+                        <label class="status-filter-item"><input type="checkbox" value="killed" checked><span class="status-dot killed"></span>Killed</label>
+                        <label class="status-filter-item"><input type="checkbox" value="skipped" checked><span class="status-dot skipped"></span>Skipped</label>
+                    </div>
+                </div>
                 <div class="sort-dropdown-container">
                     <select id="sort-select" class="sort-select" title="Sort by">
                         <option value="status">Sort by Status</option>
@@ -99,6 +118,25 @@
         <div id="cron-tab" class="tab-content">
             <div class="branches-toolbar">
                 <input type="text" id="cron-filter" class="branch-filter" placeholder="Filter cron builds...">
+                <div class="status-filter-dropdown" id="cron-status-filter">
+                    <button class="status-filter-btn" type="button">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M1.5 1.5A.5.5 0 0 1 2 1h12a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.128.334L10 8.692V13.5a.5.5 0 0 1-.342.474l-3 1A.5.5 0 0 1 6 14.5V8.692L1.628 3.834A.5.5 0 0 1 1.5 3.5v-2z"/>
+                        </svg>
+                        Status
+                        <svg class="dropdown-arrow" width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+                            <path d="M2 3.5L5 6.5L8 3.5"/>
+                        </svg>
+                    </button>
+                    <div class="status-filter-menu">
+                        <label class="status-filter-item"><input type="checkbox" value="success" checked><span class="status-dot success"></span>Success</label>
+                        <label class="status-filter-item"><input type="checkbox" value="failure" checked><span class="status-dot failure"></span>Failure</label>
+                        <label class="status-filter-item"><input type="checkbox" value="running" checked><span class="status-dot running"></span>Running</label>
+                        <label class="status-filter-item"><input type="checkbox" value="pending" checked><span class="status-dot pending"></span>Pending</label>
+                        <label class="status-filter-item"><input type="checkbox" value="killed" checked><span class="status-dot killed"></span>Killed</label>
+                        <label class="status-filter-item"><input type="checkbox" value="skipped" checked><span class="status-dot skipped"></span>Skipped</label>
+                    </div>
+                </div>
                 <div class="sort-dropdown-container">
                     <select id="cron-sort-select" class="sort-select" title="Sort by">
                         <option value="status">Sort by Status</option>

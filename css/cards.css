@@ -70,6 +70,120 @@
     flex-shrink: 0;
 }
 
+/* Status filter dropdown */
+.status-filter-dropdown {
+    position: relative;
+}
+
+.status-filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--card-bg);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.status-filter-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--text-color);
+}
+
+.status-filter-dropdown.open .status-filter-btn {
+    border-color: var(--primary-color);
+    color: var(--text-color);
+}
+
+.status-filter-btn .dropdown-arrow {
+    transition: transform 0.2s ease;
+}
+
+.status-filter-dropdown.open .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.status-filter-btn.has-filter {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    color: white;
+}
+
+.status-filter-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 150px;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 100;
+    padding: 0.5rem 0;
+}
+
+.status-filter-dropdown.open .status-filter-menu {
+    display: block;
+}
+
+.status-filter-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    transition: background-color 0.15s ease;
+}
+
+.status-filter-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.status-filter-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--primary-color);
+}
+
+.status-filter-item .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-filter-item .status-dot.success {
+    background-color: var(--success-color);
+}
+
+.status-filter-item .status-dot.failure {
+    background-color: var(--failure-color);
+}
+
+.status-filter-item .status-dot.running {
+    background-color: var(--running-color);
+}
+
+.status-filter-item .status-dot.pending {
+    background-color: var(--pending-color);
+}
+
+.status-filter-item .status-dot.killed {
+    background-color: var(--killed-color, #6c757d);
+}
+
+.status-filter-item .status-dot.skipped {
+    background-color: var(--skipped-color, #6c757d);
+}
+
 /* Sort dropdown */
 .sort-dropdown-container {
     position: relative;

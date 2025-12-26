@@ -36,8 +36,10 @@ const elements = {
     sortSelect: document.getElementById('sort-select'),
     toggleBranches: document.getElementById('toggle-branches'),
     togglePRs: document.getElementById('toggle-prs'),
+    branchStatusFilter: document.getElementById('branch-status-filter'),
     cronFilter: document.getElementById('cron-filter'),
     cronSortSelect: document.getElementById('cron-sort-select'),
+    cronStatusFilter: document.getElementById('cron-status-filter'),
     // Settings elements
     clearCacheBtn: document.getElementById('clear-cache-btn'),
     filterEmptyReposCheckbox: document.getElementById('setting-filter-empty-repos'),
@@ -114,6 +116,48 @@ function initToolbar(config) {
     }
 }
 
+// Initialize status filter dropdown
+function initStatusFilterDropdown(dropdownEl, stateKey, applyFilterAndRender, getBuilds) {
+    if (!dropdownEl) return;
+    
+    const btn = dropdownEl.querySelector('.status-filter-btn');
+    const menu = dropdownEl.querySelector('.status-filter-menu');
+    const checkboxes = menu.querySelectorAll('input[type="checkbox"]');
+    
+    // Toggle dropdown
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dropdownEl.classList.toggle('open');
+    });
+    
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+        if (!dropdownEl.contains(e.target)) {
+            dropdownEl.classList.remove('open');
+        }
+    });
+    
+    // Handle checkbox changes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+            const status = checkbox.value;
+            if (checkbox.checked) {
+                state[stateKey].add(status);
+            } else {
+                state[stateKey].delete(status);
+            }
+            
+            // Update button style if filter is active
+            const allChecked = state[stateKey].size === 6;
+            btn.classList.toggle('has-filter', !allChecked);
+            
+            if (getBuilds().length > 0) {
+                applyFilterAndRender();
+            }
+        });
+    });
+}
+
 function initBranchToolbar() {
     // Initialize shared filter/sort for branches
     initToolbar({
@@ -142,6 +186,14 @@ function initBranchToolbar() {
             applyBranchFilterAndRender();
         }
     });
+    
+    // Status filter dropdown
+    initStatusFilterDropdown(
+        elements.branchStatusFilter,
+        'branchStatusFilter',
+        applyBranchFilterAndRender,
+        () => state.lastBranchBuilds
+    );
 }
 
 function initCronToolbar() {
@@ -154,6 +206,14 @@ function initCronToolbar() {
         getBuilds: () => state.lastCronBuilds,
         applyFilterAndRender: applyCronFilterAndRender
     });
+    
+    // Status filter dropdown
+    initStatusFilterDropdown(
+        elements.cronStatusFilter,
+        'cronStatusFilter',
+        applyCronFilterAndRender,
+        () => state.lastCronBuilds
+    );
 }
 
 // Shared callbacks object for config management (avoids deep nesting)
@@ -363,6 +423,12 @@ function applyBranchFilterAndRender() {
         }
     });
     
+    // Filter by status
+    filtered = filtered.filter(build => {
+        const status = build.status === 'error' ? 'failure' : build.status;
+        return state.branchStatusFilter.has(status);
+    });
+    
     filtered = sortBranchBuilds(filtered);
     renderBranchCards(filtered, elements.branchesCards);
 }
@@ -390,6 +456,13 @@ async function loadCronBuilds() {
 // Apply current filter and render cron builds
 function applyCronFilterAndRender() {
     let filtered = filterBranchBuilds(state.lastCronBuilds, state.cronFilter);
+    
+    // Filter by status
+    filtered = filtered.filter(build => {
+        const status = build.status === 'error' ? 'failure' : build.status;
+        return state.cronStatusFilter.has(status);
+    });
+    
     filtered = sortCronBuilds(filtered, state.cronSortMode);
     renderCronCards(filtered, elements.cronCards);
 }

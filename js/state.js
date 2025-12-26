@@ -22,12 +22,14 @@ export const state = {
     branchFilter: '',
     showBranches: true,        // Toggle branches visibility
     showPRs: true,             // Toggle PRs visibility
+    branchStatusFilter: new Set(['success', 'failure', 'running', 'pending', 'killed', 'skipped']),
     overviewHeadBuilds: true,  // Toggle: true = head/cron builds, false = all builds
     lastBranchBuilds: [],
     
     // Cron tab state (mirrors branch state)
     cronSortMode: 'status',
     cronFilter: '',
+    cronStatusFilter: new Set(['success', 'failure', 'running', 'pending', 'killed', 'skipped']),
     lastCronBuilds: [],
     
     // Settings
