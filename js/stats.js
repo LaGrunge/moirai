@@ -110,15 +110,16 @@ export function calculateStats(builds) {
 }
 
 // Generate histogram data for visualization
-export function generateHistogramData(builds, maxBars = 30) {
-    // Take last N builds for histogram
-    const recentBuilds = builds.slice(-maxBars);
+export function generateHistogramData(builds, maxBars = null, getBuildUrlFn = null) {
+    // Take last N builds for histogram (or all if maxBars is null)
+    const recentBuilds = maxBars ? builds.slice(-maxBars) : builds;
 
     return recentBuilds.map(build => ({
         number: build.number,
         duration: build.started && build.finished ? build.finished - build.started : 0,
         status: build.status,
-        created: build.created
+        created: build.created,
+        url: getBuildUrlFn ? getBuildUrlFn(build) : null
     }));
 }
 
@@ -142,8 +143,10 @@ export function renderStatsPanel(stats, histogramData, periodDays) {
         const heightPercent = (bar.duration / maxDuration) * 100;
         const statusClass = `hist-${bar.status}`;
         const tooltip = `#${bar.number}: ${formatSeconds(bar.duration)}`;
+        const clickAttr = bar.url ? `onclick="window.open('${bar.url}', '_blank')"` : '';
+        const cursorStyle = bar.url ? 'cursor: pointer;' : '';
 
-        return `<div class="hist-bar ${statusClass}" style="height: ${heightPercent}%" title="${tooltip}"></div>`;
+        return `<div class="hist-bar ${statusClass}" style="height: ${heightPercent}%; ${cursorStyle}" title="${tooltip}" ${clickAttr}></div>`;
     }).join('');
 
     return `

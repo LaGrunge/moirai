@@ -112,7 +112,7 @@ async function loadStatsContent(statsContainer, branch, isCron, periodDays, isPR
     try {
         const builds = await getBranchBuilds(branch, periodDays, isCron, isPR);
         const stats = calculateStats(builds);
-        const histogramData = generateHistogramData(builds);
+        const histogramData = generateHistogramData(builds, builds.length, getBuildUrl);
 
         statsContainer.innerHTML = renderStatsPanel(stats, histogramData, periodDays);
 
