@@ -14,6 +14,7 @@ import { showLoading, showPlaceholder, showError } from './ui/common.js';
 import { initDemoMode, loadDemoData } from './demo.js';
 import { loadOverviewData, renderOverview, initOverviewPeriodHandler } from './ui/overview.js';
 import { loadInfrastructureData, renderInfrastructure, initInfraPeriodHandler } from './ui/infrastructure.js';
+import { loadContributorsData, renderContributors, initContribPeriodHandler } from './ui/contributors.js';
 
 // DOM Elements
 const elements = {
@@ -23,6 +24,7 @@ const elements = {
     cronCards: document.getElementById('cron-cards'),
     overviewContent: document.getElementById('overview-content'),
     infraContent: document.getElementById('infra-content'),
+    contributorsContent: document.getElementById('contributors-content'),
     tabButtons: document.querySelectorAll('.tab-btn'),
     tabContents: document.querySelectorAll('.tab-content'),
     themeToggle: document.getElementById('theme-toggle'),
@@ -61,6 +63,7 @@ function getDemoCallbacks() {
         loadCronBuilds,
         loadOverview,
         loadInfrastructure,
+        loadContributors,
         populateConfigDropdown: () => populateConfigDropdown(elements.configDropdown, selectConfig),
         updateConfigSelectButton: () => updateConfigSelectButton(elements.configSelectBtn),
         elements
@@ -151,6 +154,7 @@ function selectConfig(configId) {
             loadCronBuilds();
             loadOverview();
             loadInfrastructure();
+            loadContributors();
         }
     } else {
         state.currentConfig = null;
@@ -162,6 +166,7 @@ function selectConfig(configId) {
         showPlaceholder(elements.cronCards, 'Select a repository from the dropdown');
         showPlaceholder(elements.overviewContent, 'Select a repository to view overview');
         showPlaceholder(elements.infraContent, 'Select a repository to view infrastructure details');
+        showPlaceholder(elements.contributorsContent, 'Select a repository to view contributors');
     }
 }
 
@@ -198,6 +203,24 @@ async function loadInfrastructure() {
         initInfraPeriodHandler(elements.infraContent);
     } catch (error) {
         elements.infraContent.innerHTML = `<div class="infra-error">Failed to load infrastructure: ${error.message}</div>`;
+    }
+}
+
+// Load contributors data
+async function loadContributors() {
+    if (!state.currentServer || !state.currentRepo) {
+        showPlaceholder(elements.contributorsContent, 'Select a repository to view contributors');
+        return;
+    }
+
+    elements.contributorsContent.innerHTML = '<div class="contrib-loading">Loading contributors data...</div>';
+
+    try {
+        const stats = await loadContributorsData();
+        renderContributors(elements.contributorsContent, stats);
+        initContribPeriodHandler(elements.contributorsContent);
+    } catch (error) {
+        elements.contributorsContent.innerHTML = `<div class="contrib-error">Failed to load contributors: ${error.message}</div>`;
     }
 }
 
