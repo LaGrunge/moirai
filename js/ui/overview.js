@@ -1,10 +1,11 @@
 // Overview tab for managers - high-level statistics without technical details
 
 import { state } from '../state.js';
-import { apiRequest } from '../api.js';
+import { fetchBuildsForPeriod } from '../api.js';
 import { normalizeBuild } from '../builds.js';
-import { getRepoFullName, formatSeconds } from '../utils.js';
+import { formatSeconds } from '../utils.js';
 import { getDefaultStatsPeriod } from '../stats.js';
+import { createPeriodHandler } from './periodHandler.js';
 
 // Load overview data for current repository
 export async function loadOverviewData(periodDays = null) {
@@ -16,22 +17,8 @@ export async function loadOverviewData(periodDays = null) {
         return null;
     }
 
-    const repoFullName = getRepoFullName(state.currentRepo);
-    let endpoint;
-
-    if (state.currentServer.type === 'drone') {
-        endpoint = `/repos/${repoFullName}/builds?per_page=100`;
-    } else {
-        endpoint = `/repos/${state.currentRepo.id}/pipelines?per_page=100`;
-    }
-
-    const allBuilds = await apiRequest(endpoint);
-    const cutoffTime = Math.floor(Date.now() / 1000) - (periodDays * 24 * 60 * 60);
-
-    // Filter by time period
-    const builds = allBuilds
-        .map(normalizeBuild)
-        .filter(build => build.created >= cutoffTime);
+    const rawBuilds = await fetchBuildsForPeriod(periodDays);
+    const builds = rawBuilds.map(normalizeBuild);
 
     return calculateOverviewStats(builds, periodDays);
 }
@@ -432,47 +419,11 @@ function renderLineChart(trendData, field, unit) {
     `;
 }
 
-// Initialize overview tab
-export function initOverview(container, periodSelect) {
-    if (periodSelect) {
-        periodSelect.addEventListener('change', async (e) => {
-            const newPeriod = parseInt(e.target.value);
-            container.innerHTML = '<div class="overview-loading">Loading...</div>';
-            try {
-                const stats = await loadOverviewData(newPeriod);
-                renderOverview(container, stats);
-                // Re-attach period change handler
-                const newSelect = container.querySelector('#overview-period');
-                if (newSelect) {
-                    newSelect.addEventListener('change', async (ev) => {
-                        const period = parseInt(ev.target.value);
-                        container.innerHTML = '<div class="overview-loading">Loading...</div>';
-                        const newStats = await loadOverviewData(period);
-                        renderOverview(container, newStats);
-                        initOverviewPeriodHandler(container);
-                    });
-                }
-            } catch (error) {
-                container.innerHTML = `<div class="overview-error">Failed to load data: ${error.message}</div>`;
-            }
-        });
-    }
-}
-
-// Helper to re-attach period handler after re-render
-export function initOverviewPeriodHandler(container) {
-    const periodSelect = container.querySelector('#overview-period');
-    if (periodSelect) {
-        periodSelect.addEventListener('change', async (e) => {
-            const newPeriod = parseInt(e.target.value);
-            container.innerHTML = '<div class="overview-loading">Loading...</div>';
-            try {
-                const stats = await loadOverviewData(newPeriod);
-                renderOverview(container, stats);
-                initOverviewPeriodHandler(container);
-            } catch (error) {
-                container.innerHTML = `<div class="overview-error">Failed to load data: ${error.message}</div>`;
-            }
-        });
-    }
-}
+// Period handler using shared factory
+export const initOverviewPeriodHandler = createPeriodHandler({
+    selectId: 'overview-period',
+    loadingClass: 'overview-loading',
+    loadingText: 'Loading...',
+    loadData: loadOverviewData,
+    render: renderOverview
+});

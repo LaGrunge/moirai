@@ -1,6 +1,7 @@
 // Settings tab functionality
 
 import { state, CI_ICONS, saveSettings, saveSavedConfigs } from '../state.js';
+import { storage } from '../storage.js';
 import { escapeHtml, getRepoId, getRepoFullName, generateDisplayName } from '../utils.js';
 import { apiRequest, filterReposWithBuilds } from '../api.js';
 
@@ -43,8 +44,7 @@ export function initSettings(elements, callbacks) {
 
     // Handle clear cache button
     clearCacheBtn.addEventListener('click', () => {
-        localStorage.removeItem('ci_dashboard_saved_configs');
-        localStorage.removeItem('ci_dashboard_selected_config');
+        storage.clearAll();
         alert('All data cleared! Page will reload.');
         location.reload();
     });

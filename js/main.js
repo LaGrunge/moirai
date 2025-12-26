@@ -2,6 +2,7 @@
 // Supports both Woodpecker and Drone CI
 
 import { state, loadSettings, loadSavedConfigs, saveSavedConfigs } from './state.js';
+import { storage } from './storage.js';
 import { initGlobalErrorHandlers } from './errors.js';
 import { apiRequest, getBuildsEndpoint, getExistingBranches, getOpenPullRequests, autoDetectServerTypes, loadServersFromProxy } from './api.js';
 import { normalizeBuild, groupByBranch, groupByCron, sortBranchBuilds, filterBranchBuilds } from './builds.js';
@@ -153,7 +154,7 @@ async function selectConfig(configId) {
             };
             state.currentRepo = state.currentConfig.repoData;
 
-            localStorage.setItem('ci_dashboard_selected_config', configId);
+            storage.saveSelectedConfig(configId);
             updateConfigSelectButton(elements.configSelectBtn);
             updateConfigDropdownSelection(elements.configDropdown);
 
@@ -179,7 +180,7 @@ async function selectConfig(configId) {
         state.currentConfig = null;
         state.currentServer = null;
         state.currentRepo = null;
-        localStorage.removeItem('ci_dashboard_selected_config');
+        storage.clearSelectedConfig();
         updateConfigSelectButton(elements.configSelectBtn);
         setConnectionStatus('disconnected');
         showPlaceholder(elements.branchesCards, 'Select a repository from the dropdown');
@@ -261,7 +262,7 @@ async function loadData() {
     );
 
     // Restore last selected config
-    const savedConfigId = localStorage.getItem('ci_dashboard_selected_config');
+    const savedConfigId = storage.getSelectedConfig();
     if (savedConfigId) {
         const config = state.savedConfigs.find(c => c.id === savedConfigId);
         if (config) {

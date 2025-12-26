@@ -103,6 +103,29 @@ export function createBuildCard(build, type) {
     `;
 }
 
+// Core stats loading logic (shared by toggle and period change)
+async function loadStatsContent(statsContainer, branch, isCron, periodDays, isPR, onPeriodChange) {
+    statsContainer.innerHTML = '<div class="stats-loading">Loading statistics...</div>';
+
+    try {
+        const builds = await getBranchBuilds(branch, periodDays, isCron, isPR);
+        const stats = calculateStats(builds);
+        const histogramData = generateHistogramData(builds);
+
+        statsContainer.innerHTML = renderStatsPanel(stats, histogramData, periodDays);
+
+        // Add period change handler
+        const periodSelect = statsContainer.querySelector('.stats-period-select');
+        if (periodSelect) {
+            periodSelect.addEventListener('change', (e) => {
+                onPeriodChange(parseInt(e.target.value));
+            });
+        }
+    } catch (error) {
+        statsContainer.innerHTML = `<div class="stats-error">Failed to load statistics: ${error.message}</div>`;
+    }
+}
+
 // Toggle stats panel for a card
 export async function toggleStats(cardId, branch, isCron, periodDays = null, forceRefresh = false, isPR = false) {
     if (periodDays === null) {
@@ -121,60 +144,14 @@ export async function toggleStats(cardId, branch, isCron, periodDays = null, for
         return;
     }
 
-    // Show loading
-    statsContainer.innerHTML = '<div class="stats-loading">Loading statistics...</div>';
     statsContainer.style.display = 'block';
     statsBtn.classList.add('active');
 
-    try {
-        const builds = await getBranchBuilds(branch, periodDays, isCron, isPR);
-        const stats = calculateStats(builds);
-        const histogramData = generateHistogramData(builds);
+    const onPeriodChange = (newPeriod) => {
+        loadStatsContent(statsContainer, branch, isCron, newPeriod, isPR, onPeriodChange);
+    };
 
-        statsContainer.innerHTML = renderStatsPanel(stats, histogramData, periodDays);
-
-        // Add period change handler
-        const periodSelect = statsContainer.querySelector('.stats-period-select');
-        if (periodSelect) {
-            periodSelect.addEventListener('change', (e) => {
-                const newPeriod = parseInt(e.target.value);
-                // Force refresh when changing period
-                loadStatsForCard(cardId, branch, isCron, newPeriod, isPR);
-            });
-        }
-    } catch (error) {
-        statsContainer.innerHTML = `<div class="stats-error">Failed to load statistics: ${error.message}</div>`;
-    }
-}
-
-// Load stats without toggle logic (for period change)
-async function loadStatsForCard(cardId, branch, isCron, periodDays, isPR = false) {
-    const wrapper = document.getElementById(cardId);
-    if (!wrapper) return;
-
-    const statsContainer = wrapper.querySelector('.stats-container');
-
-    // Show loading
-    statsContainer.innerHTML = '<div class="stats-loading">Loading statistics...</div>';
-
-    try {
-        const builds = await getBranchBuilds(branch, periodDays, isCron, isPR);
-        const stats = calculateStats(builds);
-        const histogramData = generateHistogramData(builds);
-
-        statsContainer.innerHTML = renderStatsPanel(stats, histogramData, periodDays);
-
-        // Add period change handler again
-        const periodSelect = statsContainer.querySelector('.stats-period-select');
-        if (periodSelect) {
-            periodSelect.addEventListener('change', (e) => {
-                const newPeriod = parseInt(e.target.value);
-                loadStatsForCard(cardId, branch, isCron, newPeriod, isPR);
-            });
-        }
-    } catch (error) {
-        statsContainer.innerHTML = `<div class="stats-error">Failed to load statistics: ${error.message}</div>`;
-    }
+    await loadStatsContent(statsContainer, branch, isCron, periodDays, isPR, onPeriodChange);
 }
 
 // Render branch cards

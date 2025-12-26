@@ -1,10 +1,11 @@
 // Infrastructure tab for CI engineers - technical details and system health
 
 import { state } from '../state.js';
-import { apiRequest } from '../api.js';
+import { fetchBuildsForPeriod } from '../api.js';
 import { normalizeBuild } from '../builds.js';
-import { getRepoFullName, formatSeconds, formatTimeAgo } from '../utils.js';
+import { formatSeconds, formatTimeAgo } from '../utils.js';
 import { getDefaultStatsPeriod } from '../stats.js';
+import { createPeriodHandler } from './periodHandler.js';
 
 // Load infrastructure data
 export async function loadInfrastructureData(periodDays = null) {
@@ -16,21 +17,8 @@ export async function loadInfrastructureData(periodDays = null) {
         return null;
     }
 
-    const repoFullName = getRepoFullName(state.currentRepo);
-    let buildsEndpoint;
-
-    if (state.currentServer.type === 'drone') {
-        buildsEndpoint = `/repos/${repoFullName}/builds?per_page=100`;
-    } else {
-        buildsEndpoint = `/repos/${state.currentRepo.id}/pipelines?per_page=100`;
-    }
-
-    const allBuilds = await apiRequest(buildsEndpoint);
-    const cutoffTime = Math.floor(Date.now() / 1000) - (periodDays * 24 * 60 * 60);
-
-    const builds = allBuilds
-        .map(normalizeBuild)
-        .filter(build => build.created >= cutoffTime);
+    const rawBuilds = await fetchBuildsForPeriod(periodDays);
+    const builds = rawBuilds.map(normalizeBuild);
 
     return calculateInfraStats(builds, periodDays);
 }
@@ -340,20 +328,11 @@ function renderHourlyChart(distribution) {
     `;
 }
 
-// Initialize infrastructure period handler
-export function initInfraPeriodHandler(container) {
-    const periodSelect = container.querySelector('#infra-period');
-    if (periodSelect) {
-        periodSelect.addEventListener('change', async (e) => {
-            const newPeriod = parseInt(e.target.value);
-            container.innerHTML = '<div class="infra-loading">Loading infrastructure data...</div>';
-            try {
-                const stats = await loadInfrastructureData(newPeriod);
-                renderInfrastructure(container, stats);
-                initInfraPeriodHandler(container);
-            } catch (error) {
-                container.innerHTML = `<div class="infra-error">Failed to load data: ${error.message}</div>`;
-            }
-        });
-    }
-}
+// Period handler using shared factory
+export const initInfraPeriodHandler = createPeriodHandler({
+    selectId: 'infra-period',
+    loadingClass: 'infra-loading',
+    loadingText: 'Loading infrastructure data...',
+    loadData: loadInfrastructureData,
+    render: renderInfrastructure
+});

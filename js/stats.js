@@ -1,9 +1,9 @@
 // Build statistics module
 
 import { state } from './state.js';
-import { apiRequest } from './api.js';
+import { fetchBuildsForPeriod } from './api.js';
 import { normalizeBuild } from './builds.js';
-import { getRepoFullName, formatSeconds } from './utils.js';
+import { formatSeconds } from './utils.js';
 
 // Get default period from settings
 export function getDefaultStatsPeriod() {
@@ -31,23 +31,12 @@ export async function getBranchBuilds(branchOrPR, periodDays = null, isCron = fa
         periodDays = getDefaultStatsPeriod();
     }
     
-    const repoFullName = getRepoFullName(state.currentRepo);
-    let endpoint;
+    const rawBuilds = await fetchBuildsForPeriod(periodDays);
 
-    if (state.currentServer.type === 'drone') {
-        endpoint = `/repos/${repoFullName}/builds?per_page=100`;
-    } else {
-        endpoint = `/repos/${state.currentRepo.id}/pipelines?per_page=100`;
-    }
-
-    const allBuilds = await apiRequest(endpoint);
-    const cutoffTime = Math.floor(Date.now() / 1000) - (periodDays * 24 * 60 * 60);
-
-    // Filter by branch/cron/PR and time period
-    const filtered = allBuilds
+    // Filter by branch/cron/PR
+    const filtered = rawBuilds
         .map(normalizeBuild)
         .filter(build => {
-            if (build.created < cutoffTime) return false;
 
             if (isCron) {
                 return build.event === 'cron' && (build.cron === branchOrPR || (!build.cron && branchOrPR === 'default'));

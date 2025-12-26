@@ -1,5 +1,7 @@
 // Application State Management
 
+import { storage } from './storage.js';
+
 // CI Type Icons (inline SVG data URLs)
 export const CI_ICONS = {
     woodpecker: 'data:image/svg+xml,' + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="#4CAF50"/><path d="M30 65 L50 35 L70 65 L50 55 Z" fill="white"/></svg>`),
@@ -35,36 +37,22 @@ export const originalFunctions = {
 
 // Load settings from localStorage
 export function loadSettings() {
-    const saved = localStorage.getItem('ci_dashboard_settings');
-    if (saved) {
-        try {
-            Object.assign(state.settings, JSON.parse(saved));
-        } catch (e) {
-            console.error('Failed to load settings:', e);
-        }
-    }
+    const saved = storage.getSettings();
+    Object.assign(state.settings, saved);
 }
 
 // Save settings to localStorage
 export function saveSettings() {
-    localStorage.setItem('ci_dashboard_settings', JSON.stringify(state.settings));
+    storage.saveSettings(state.settings);
 }
 
 // Load saved configs from localStorage
 export function loadSavedConfigs() {
-    const saved = localStorage.getItem('ci_dashboard_saved_configs');
-    if (saved) {
-        try {
-            state.savedConfigs = JSON.parse(saved);
-        } catch (e) {
-            console.error('Failed to load saved configs:', e);
-            state.savedConfigs = [];
-        }
-    }
+    state.savedConfigs = storage.getSavedConfigs();
 }
 
 // Save configs to localStorage
 export function saveSavedConfigs() {
-    localStorage.setItem('ci_dashboard_saved_configs', JSON.stringify(state.savedConfigs));
+    storage.saveSavedConfigs(state.savedConfigs);
 }
 

@@ -1,10 +1,10 @@
 // Contributors tab - leaderboard of developers who triggered builds
 
 import { state } from '../state.js';
-import { apiRequest } from '../api.js';
-import { normalizeBuild } from '../builds.js';
-import { getRepoFullName, formatTimeAgo } from '../utils.js';
+import { fetchBuildsForPeriod } from '../api.js';
+import { formatTimeAgo, escapeHtml } from '../utils.js';
 import { getDefaultStatsPeriod } from '../stats.js';
+import { createPeriodHandler } from './periodHandler.js';
 
 // Load contributors data
 export async function loadContributorsData(periodDays = null) {
@@ -16,23 +16,8 @@ export async function loadContributorsData(periodDays = null) {
         return null;
     }
 
-    const repoFullName = getRepoFullName(state.currentRepo);
-    let endpoint;
-
-    if (state.currentServer.type === 'drone') {
-        endpoint = `/repos/${repoFullName}/builds?per_page=100`;
-    } else {
-        endpoint = `/repos/${state.currentRepo.id}/pipelines?per_page=100`;
-    }
-
-    const allBuilds = await apiRequest(endpoint);
-    const cutoffTime = Math.floor(Date.now() / 1000) - (periodDays * 24 * 60 * 60);
-
     // Don't use normalizeBuild here - we need raw author data
-    const builds = allBuilds.filter(build => {
-        const created = build.created || build.created_at;
-        return created >= cutoffTime;
-    });
+    const builds = await fetchBuildsForPeriod(periodDays);
 
     return calculateContributorStats(builds, periodDays);
 }
@@ -280,13 +265,6 @@ function getAvatarHtml(contributor) {
     return `<div class="avatar-initials" style="background-color: ${colors[colorIndex]}">${initials}</div>`;
 }
 
-// Escape HTML
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
-
 // Render contributor bar chart
 function renderContributorChart(contributors, maxBuilds) {
     if (contributors.length === 0) {
@@ -388,20 +366,11 @@ function renderLeaderboardTable(contributors) {
     `;
 }
 
-// Initialize contributors period handler
-export function initContribPeriodHandler(container) {
-    const periodSelect = container.querySelector('#contrib-period');
-    if (periodSelect) {
-        periodSelect.addEventListener('change', async (e) => {
-            const newPeriod = parseInt(e.target.value);
-            container.innerHTML = '<div class="contrib-loading">Loading contributors data...</div>';
-            try {
-                const stats = await loadContributorsData(newPeriod);
-                renderContributors(container, stats);
-                initContribPeriodHandler(container);
-            } catch (error) {
-                container.innerHTML = `<div class="contrib-error">Failed to load data: ${error.message}</div>`;
-            }
-        });
-    }
-}
+// Period handler using shared factory
+export const initContribPeriodHandler = createPeriodHandler({
+    selectId: 'contrib-period',
+    loadingClass: 'contrib-loading',
+    loadingText: 'Loading contributors data...',
+    loadData: loadContributorsData,
+    render: renderContributors
+});

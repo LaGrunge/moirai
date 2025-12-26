@@ -1,6 +1,7 @@
 // Demo mode functionality
 
 import { state, originalFunctions } from './state.js';
+import { storage } from './storage.js';
 import { renderBranchCards, renderCronCards } from './ui/cards.js';
 
 // Update demo mode UI
@@ -16,13 +17,12 @@ export function updateDemoModeUI(demoToggle) {
 
 // Initialize demo mode
 export function initDemoMode(demoToggle, callbacks) {
-    const savedDemoMode = localStorage.getItem('ci_dashboard_demo_mode') === 'true';
-    state.demoMode = savedDemoMode;
+    state.demoMode = storage.getDemoMode();
     updateDemoModeUI(demoToggle);
 
     demoToggle.addEventListener('click', () => {
         state.demoMode = !state.demoMode;
-        localStorage.setItem('ci_dashboard_demo_mode', state.demoMode);
+        storage.saveDemoMode(state.demoMode);
         updateDemoModeUI(demoToggle);
 
         if (state.demoMode) {

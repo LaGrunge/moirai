@@ -93,14 +93,24 @@ export async function detectCIType(serverId) {
 }
 
 // Get builds endpoint based on CI type
-export function getBuildsEndpoint() {
+export function getBuildsEndpoint(perPage = 100) {
     const repoFullName = getRepoFullName(state.currentRepo);
 
     if (state.currentServer.type === 'drone') {
-        return `/repos/${repoFullName}/builds?per_page=100`;
+        return `/repos/${repoFullName}/builds?per_page=${perPage}`;
     } else {
-        return `/repos/${state.currentRepo.id}/pipelines?per_page=100`;
+        return `/repos/${state.currentRepo.id}/pipelines?per_page=${perPage}`;
     }
+}
+
+// Fetch builds with time filter - common pattern used by multiple tabs
+export async function fetchBuildsForPeriod(periodDays) {
+    const allBuilds = await apiRequest(getBuildsEndpoint());
+    const cutoffTime = Math.floor(Date.now() / 1000) - (periodDays * 24 * 60 * 60);
+    return allBuilds.filter(build => {
+        const created = build.created || build.created_at;
+        return created >= cutoffTime;
+    });
 }
 
 // Check if a repository has any builds
