@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CI Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="header-left">
+            <img src="favicon.svg" alt="Logo" class="logo">
+            <h1>CI Dashboard</h1>
+        </div>
+        <div class="header-right">
+            <div id="server-select" class="server-select-wrapper">
+                <button class="server-select-btn" id="server-select-btn">
+                    <span class="server-icon"></span>
+                    <span class="server-name">Select server...</span>
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+                <div class="server-dropdown" id="server-dropdown"></div>
+            </div>
+            <select id="repo-select" class="repo-select">
+                <option value="">Select repository...</option>
+            </select>
+            <button id="demo-toggle" class="demo-toggle" title="Demo mode OFF - click to enable">
+                <span class="demo-icon">🎭</span>
+            </button>
+            <button id="theme-toggle" class="theme-toggle" title="Toggle theme">
+                <span class="icon-moon">🌙</span>
+                <span class="icon-sun">☀️</span>
+            </button>
+        </div>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab-btn active" data-tab="branches">Branches</button>
+        <button class="tab-btn" data-tab="cron">Cron Builds</button>
+        <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
+    </nav>
+
+    <main class="content">
+        <div id="branches-tab" class="tab-content active">
+            <div class="branches-toolbar">
+                <input type="text" id="branch-filter" class="branch-filter" placeholder="Filter branches/PRs...">
+                <div class="sort-buttons">
+                    <button class="sort-btn active" data-sort="status" title="Sort by status">Status</button>
+                    <button class="sort-btn" data-sort="time" title="Sort by time">Time</button>
+                    <button class="sort-btn" data-sort="name" title="Sort by name">Name</button>
+                </div>
+            </div>
+            <div class="cards-container" id="branches-cards">
+                <div class="placeholder">Select a repository to view branch status</div>
+            </div>
+        </div>
+
+        <div id="cron-tab" class="tab-content">
+            <div class="cards-container" id="cron-cards">
+                <div class="placeholder">Select a repository to view cron builds</div>
+            </div>
+        </div>
+
+        <div id="settings-tab" class="tab-content">
+            <div class="settings-container">
+                <h2>Settings</h2>
+
+                <div class="settings-section">
+                    <h3>Repository Display</h3>
+                    <label class="setting-item">
+                        <input type="checkbox" id="setting-filter-empty-repos" checked>
+                        <span class="setting-label">Hide repositories without builds</span>
+                        <span class="setting-description">Only show repositories that have at least one build</span>
+                    </label>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Data</h3>
+                    <button id="clear-cache-btn" class="settings-btn">Clear Local Cache</button>
+                    <span class="setting-description">Clears saved server selection and preferences</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>CI Dashboard - Woodpecker & Drone</p>
+    </footer>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
