@@ -1,4 +1,77 @@
-# CI Dashboard
+
+## Why **Moirai**
+
+In Greek mythology, **the Moirai** are the three Fates who govern the destiny of every being:
+
+- **Clotho** spins the thread of life  
+- **Lachesis** measures its length  
+- **Atropos** cuts it when the time comes  
+
+Nothing escapes their oversight.  
+No action is forgotten.  
+No outcome is accidental.
+
+**Moirai** is named after them because a CI system is, in essence, a system of fate.
+
+Every commit spins a new thread.  
+Every pipeline step measures what will happen next.  
+Every failure or success is an inevitable outcome of the code and rules you defined.
+
+---
+
+## CI as Fate
+
+Modern CI is not just about running builds — it is about **making outcomes explicit**.
+
+- A pipeline **will** run.
+- A step **will** succeed or fail.
+- A branch **will** converge or be rejected.
+
+Moirai exists to **observe, track and reveal this fate**.
+
+It does not change the outcome —  
+it **makes it visible**.
+
+---
+
+## What Moirai Does
+
+Moirai is a unified CI dashboard for **Woodpecker** and **Drone**, designed to:
+
+- give a **single, clear view** of pipeline states across branches
+- show how builds evolve over time
+- make failures, retries and progress immediately obvious
+- turn CI noise into a **coherent story**
+
+No hidden transitions.  
+No guesswork.  
+Only the thread, the measure and the cut.
+
+---
+
+## Philosophy
+
+> *“The Fates do not act out of malice or mercy.  
+> They simply enforce the rules of the world.”*
+
+Moirai follows the same principle.
+
+It is:
+- deterministic
+- transparent
+- unapologetically honest about build state
+
+If a pipeline fails — it failed for a reason.  
+Moirai shows you **where**, **when** and **why**.
+
+---
+
+## Name in One Sentence
+
+**Moirai** is a CI dashboard that shows the fate of your builds —  
+from the first commit to the final outcome.
+
+
 
 A unified dashboard for monitoring **Woodpecker CI** and **Drone CI** pipelines.
 
