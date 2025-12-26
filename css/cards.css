@@ -78,6 +78,14 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
+.card-status-bar {
+    padding: 0.5rem 1.25rem;
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-start;
+}
+
 .card-header {
     padding: 1rem 1.25rem;
     border-bottom: 1px solid var(--border-color);

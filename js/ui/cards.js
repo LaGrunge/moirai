@@ -58,6 +58,9 @@ export function createBuildCard(build, type) {
     return `
         <div class="card-wrapper" id="${cardId}" data-branch="${encodedBranch}" data-is-cron="${isCron}" data-is-pr="${isPRStats}">
             <div class="card" data-build-url="${buildUrl}">
+                <div class="card-status-bar">
+                    <span class="status-badge ${statusClass}">${statusText}</span>
+                </div>
                 <div class="card-header">
                     <div class="card-title">
                         <span class="branch-icon">${icon}</span>
@@ -67,7 +70,6 @@ export function createBuildCard(build, type) {
                         <button class="stats-btn" title="View statistics">
                             📊
                         </button>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
                 </div>
                 <div class="card-body">
