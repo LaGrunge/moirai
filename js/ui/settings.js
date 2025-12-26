@@ -1,7 +1,7 @@
 // Settings tab functionality
 
 import { state, CI_ICONS, saveSettings, saveSavedConfigs } from '../state.js';
-import { escapeHtml, getRepoId, getRepoFullName } from '../utils.js';
+import { escapeHtml, getRepoId, getRepoFullName, generateDisplayName } from '../utils.js';
 import { apiRequest, filterReposWithBuilds } from '../api.js';
 
 // Initialize settings tab
@@ -77,9 +77,16 @@ export function initSettings(elements, callbacks) {
         }
     });
 
-    // Handle repo selection in add form
+    // Handle repo selection in add form - auto-fill display name
     addConfigRepoSelect.addEventListener('change', (e) => {
         addConfigBtn.disabled = !e.target.value;
+
+        if (e.target.value) {
+            const repo = JSON.parse(e.target.value);
+            addConfigNameInput.value = generateDisplayName(repo.fullName);
+        } else {
+            addConfigNameInput.value = '';
+        }
     });
 
     // Handle add button

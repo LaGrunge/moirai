@@ -1,5 +1,15 @@
 // Utility functions
 
+// Generate display name from repo path (e.g., "my-cool_repo" -> "My Cool Repo")
+export function generateDisplayName(repoFullName) {
+    // Get last part after /
+    const repoName = repoFullName.split('/').pop() || repoFullName;
+    // Replace - and _ with spaces, then convert to Title Case
+    return repoName
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, char => char.toUpperCase());
+}
+
 // Escape HTML to prevent XSS
 export function escapeHtml(text) {
     const div = document.createElement('div');

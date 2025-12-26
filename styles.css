@@ -312,7 +312,9 @@ body {
 /* Config dropdown (replaces server dropdown) */
 .config-select-wrapper {
     position: relative;
-    min-width: 250px;
+    min-width: 300px;
+    max-width: 500px;
+    flex: 1;
 }
 
 .config-select-btn {
@@ -351,6 +353,7 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 400px;
 }
 
 .config-select-btn .dropdown-arrow {
@@ -363,7 +366,8 @@ body {
     position: absolute;
     top: 100%;
     left: 0;
-    right: 0;
+    min-width: 100%;
+    width: max-content;
     margin-top: 4px;
     background-color: var(--card-bg);
     border-radius: 6px;
