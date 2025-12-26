@@ -33,7 +33,9 @@ const elements = {
     themeToggle: document.getElementById('theme-toggle'),
     demoToggle: document.getElementById('demo-toggle'),
     branchFilter: document.getElementById('branch-filter'),
-    sortButtons: document.querySelectorAll('.sort-btn'),
+    sortSelect: document.getElementById('sort-select'),
+    toggleBranches: document.getElementById('toggle-branches'),
+    togglePRs: document.getElementById('toggle-prs'),
     // Settings elements
     clearCacheBtn: document.getElementById('clear-cache-btn'),
     filterEmptyReposCheckbox: document.getElementById('setting-filter-empty-repos'),
@@ -93,21 +95,30 @@ function initBranchToolbar() {
         }, 200);
     });
 
-    // Sort buttons
-    elements.sortButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const sortMode = btn.dataset.sort;
-            state.branchSortMode = sortMode;
-
-            // Update active state
-            elements.sortButtons.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            // Re-render with new sort
-            if (state.lastBranchBuilds.length > 0) {
-                applyBranchFilterAndRender();
-            }
-        });
+    // Sort dropdown
+    elements.sortSelect.addEventListener('change', () => {
+        state.branchSortMode = elements.sortSelect.value;
+        if (state.lastBranchBuilds.length > 0) {
+            applyBranchFilterAndRender();
+        }
+    });
+    
+    // Toggle branches visibility
+    elements.toggleBranches.addEventListener('click', () => {
+        elements.toggleBranches.classList.toggle('active');
+        state.showBranches = elements.toggleBranches.classList.contains('active');
+        if (state.lastBranchBuilds.length > 0) {
+            applyBranchFilterAndRender();
+        }
+    });
+    
+    // Toggle PRs visibility
+    elements.togglePRs.addEventListener('click', () => {
+        elements.togglePRs.classList.toggle('active');
+        state.showPRs = elements.togglePRs.classList.contains('active');
+        if (state.lastBranchBuilds.length > 0) {
+            applyBranchFilterAndRender();
+        }
     });
 }
 
@@ -308,6 +319,16 @@ async function loadBranchBuilds() {
 // Apply current filter and render
 function applyBranchFilterAndRender() {
     let filtered = filterBranchBuilds(state.lastBranchBuilds, state.branchFilter);
+    
+    // Filter by type (branches/PRs)
+    filtered = filtered.filter(build => {
+        if (build.isPR) {
+            return state.showPRs;
+        } else {
+            return state.showBranches;
+        }
+    });
+    
     filtered = sortBranchBuilds(filtered);
     renderBranchCards(filtered, elements.branchesCards);
 }

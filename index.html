@@ -69,10 +69,26 @@
         <div id="branches-tab" class="tab-content active">
             <div class="branches-toolbar">
                 <input type="text" id="branch-filter" class="branch-filter" placeholder="Filter branches/PRs...">
-                <div class="sort-buttons">
-                    <button class="sort-btn active" data-sort="status" title="Sort by status">Status</button>
-                    <button class="sort-btn" data-sort="time" title="Sort by time">Time</button>
-                    <button class="sort-btn" data-sort="name" title="Sort by name">Name</button>
+                <div class="filter-toggles">
+                    <button class="filter-toggle active" id="toggle-branches" title="Show branches">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M9.5 3.25a2.25 2.25 0 1 1 3 2.122V6A2.5 2.5 0 0 1 10 8.5H6a1 1 0 0 0-1 1v1.128a2.251 2.251 0 1 1-1.5 0V5.372a2.25 2.25 0 1 1 1.5 0v1.836A2.493 2.493 0 0 1 6 7h4a1 1 0 0 0 1-1v-.628A2.25 2.25 0 0 1 9.5 3.25Zm-6 0a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Zm8.25-.75a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5ZM4.25 12a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z"/>
+                        </svg>
+                        Branches
+                    </button>
+                    <button class="filter-toggle active" id="toggle-prs" title="Show pull requests">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M1.5 3.25a2.25 2.25 0 1 1 3 2.122v5.256a2.251 2.251 0 1 1-1.5 0V5.372A2.25 2.25 0 0 1 1.5 3.25Zm5.677-.177L9.573.677A.25.25 0 0 1 10 .854V2.5h1A2.5 2.5 0 0 1 13.5 5v5.628a2.251 2.251 0 1 1-1.5 0V5a1 1 0 0 0-1-1h-1v1.646a.25.25 0 0 1-.427.177L7.177 3.427a.25.25 0 0 1 0-.354ZM3.75 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm0 9.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm8.25.75a.75.75 0 1 0 1.5 0 .75.75 0 0 0-1.5 0Z"/>
+                        </svg>
+                        PRs
+                    </button>
+                </div>
+                <div class="sort-dropdown-container">
+                    <select id="sort-select" class="sort-select" title="Sort by">
+                        <option value="status">Sort by Status</option>
+                        <option value="time">Sort by Time</option>
+                        <option value="name">Sort by Name</option>
+                    </select>
                 </div>
             </div>
             <div class="cards-container" id="branches-cards">

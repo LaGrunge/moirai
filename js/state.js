@@ -20,6 +20,8 @@ export const state = {
     // UI state
     branchSortMode: 'status',  // 'status', 'time', 'name'
     branchFilter: '',
+    showBranches: true,        // Toggle branches visibility
+    showPRs: true,             // Toggle PRs visibility
     lastBranchBuilds: [],
     
     // Settings
