@@ -130,9 +130,10 @@ function calculateOverviewStats(builds, periodDays) {
         }
     });
     
-    // Mark branches as cron if majority of builds are cron
+    // Mark branches as cron if they have ANY cron builds
+    // (cron builds should navigate to Cron tab, not Branches tab)
     Object.values(branchStats).forEach(b => {
-        b.isCron = b.cronCount > 0 && (b.cronCount / b.total) > 0.5;
+        b.isCron = b.cronCount > 0;
     });
 
     const totalBuilds = builds.length;
@@ -638,18 +639,17 @@ function navigateToBranch(branchName, isCron) {
     const targetTab = isCron ? 'cron' : 'branches';
     switchToTab(targetTab, tabButtons, tabContents);
     
-    // Set filter to branch name (only for branches tab)
-    if (!isCron) {
-        const branchFilter = document.getElementById('branch-filter');
-        if (branchFilter) {
-            branchFilter.value = branchName;
-            branchFilter.dispatchEvent(new Event('input', { bubbles: true }));
-        }
+    // Set filter to branch name
+    const filterId = isCron ? 'cron-filter' : 'branch-filter';
+    const filterInput = document.getElementById(filterId);
+    if (filterInput) {
+        filterInput.value = branchName;
+        filterInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
     
     // Scroll to and highlight the matching card
     setTimeout(() => {
-        const cards = document.querySelectorAll(`#${targetTab}-cards .build-card, #${targetTab}-cards .cron-card`);
+        const cards = document.querySelectorAll(`#${targetTab}-cards .card`);
         for (const card of cards) {
             const cardBranch = card.querySelector('.card-branch, .cron-branch');
             if (cardBranch && cardBranch.textContent.includes(branchName)) {

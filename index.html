@@ -97,6 +97,16 @@
         </div>
 
         <div id="cron-tab" class="tab-content">
+            <div class="branches-toolbar">
+                <input type="text" id="cron-filter" class="branch-filter" placeholder="Filter cron builds...">
+                <div class="sort-dropdown-container">
+                    <select id="cron-sort-select" class="sort-select" title="Sort by">
+                        <option value="status">Sort by Status</option>
+                        <option value="time">Sort by Time</option>
+                        <option value="name">Sort by Name</option>
+                    </select>
+                </div>
+            </div>
             <div class="cards-container" id="cron-cards">
                 <div class="placeholder">Select a repository to view cron builds</div>
             </div>

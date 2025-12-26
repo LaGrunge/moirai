@@ -36,6 +36,8 @@ const elements = {
     sortSelect: document.getElementById('sort-select'),
     toggleBranches: document.getElementById('toggle-branches'),
     togglePRs: document.getElementById('toggle-prs'),
+    cronFilter: document.getElementById('cron-filter'),
+    cronSortSelect: document.getElementById('cron-sort-select'),
     // Settings elements
     clearCacheBtn: document.getElementById('clear-cache-btn'),
     filterEmptyReposCheckbox: document.getElementById('setting-filter-empty-repos'),
@@ -57,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initTabs(elements.tabButtons, elements.tabContents);
     initConfigSelect(elements.configSelectBtn, elements.configDropdown);
     initBranchToolbar();
+    initCronToolbar();
     initSettingsTab();
     initKeyboardShortcuts({
         refresh: refreshAllData,
@@ -82,28 +85,47 @@ function getDemoCallbacks() {
 }
 
 // Initialize branch filter and sort controls
-function initBranchToolbar() {
+// Generic toolbar initializer for filter/sort (used by both Branches and Cron tabs)
+function initToolbar(config) {
+    const { filterInput, sortSelect, filterStateKey, sortStateKey, getBuilds, applyFilterAndRender } = config;
+    
     // Filter input with debounce
     let filterTimeout;
-    elements.branchFilter.addEventListener('input', (e) => {
-        clearTimeout(filterTimeout);
-        filterTimeout = setTimeout(() => {
-            state.branchFilter = e.target.value;
-            if (state.lastBranchBuilds.length > 0) {
-                applyBranchFilterAndRender();
-            }
-        }, 200);
-    });
+    if (filterInput) {
+        filterInput.addEventListener('input', (e) => {
+            clearTimeout(filterTimeout);
+            filterTimeout = setTimeout(() => {
+                state[filterStateKey] = e.target.value;
+                if (getBuilds().length > 0) {
+                    applyFilterAndRender();
+                }
+            }, 200);
+        });
+    }
 
     // Sort dropdown
-    elements.sortSelect.addEventListener('change', () => {
-        state.branchSortMode = elements.sortSelect.value;
-        if (state.lastBranchBuilds.length > 0) {
-            applyBranchFilterAndRender();
-        }
+    if (sortSelect) {
+        sortSelect.addEventListener('change', () => {
+            state[sortStateKey] = sortSelect.value;
+            if (getBuilds().length > 0) {
+                applyFilterAndRender();
+            }
+        });
+    }
+}
+
+function initBranchToolbar() {
+    // Initialize shared filter/sort for branches
+    initToolbar({
+        filterInput: elements.branchFilter,
+        sortSelect: elements.sortSelect,
+        filterStateKey: 'branchFilter',
+        sortStateKey: 'branchSortMode',
+        getBuilds: () => state.lastBranchBuilds,
+        applyFilterAndRender: applyBranchFilterAndRender
     });
     
-    // Toggle branches visibility
+    // Toggle branches visibility (specific to branches tab)
     elements.toggleBranches.addEventListener('click', () => {
         elements.toggleBranches.classList.toggle('active');
         state.showBranches = elements.toggleBranches.classList.contains('active');
@@ -112,13 +134,25 @@ function initBranchToolbar() {
         }
     });
     
-    // Toggle PRs visibility
+    // Toggle PRs visibility (specific to branches tab)
     elements.togglePRs.addEventListener('click', () => {
         elements.togglePRs.classList.toggle('active');
         state.showPRs = elements.togglePRs.classList.contains('active');
         if (state.lastBranchBuilds.length > 0) {
             applyBranchFilterAndRender();
         }
+    });
+}
+
+function initCronToolbar() {
+    // Initialize shared filter/sort for cron
+    initToolbar({
+        filterInput: elements.cronFilter,
+        sortSelect: elements.cronSortSelect,
+        filterStateKey: 'cronFilter',
+        sortStateKey: 'cronSortMode',
+        getBuilds: () => state.lastCronBuilds,
+        applyFilterAndRender: applyCronFilterAndRender
     });
 }
 
@@ -345,13 +379,37 @@ async function loadCronBuilds() {
         const normalizedBuilds = builds.map(normalizeBuild);
         const cronBuilds = normalizedBuilds.filter(b => b.event === 'cron');
 
-        // Group by cron job name
-        const groupedCronBuilds = groupByCron(cronBuilds);
-        renderCronCards(groupedCronBuilds, elements.cronCards);
+        // Group by cron job name and store for filtering
+        state.lastCronBuilds = groupByCron(cronBuilds);
+        applyCronFilterAndRender();
     } catch (error) {
         console.error('Failed to load cron builds:', error);
         showError(elements.cronCards, 'Failed to load cron builds.');
     }
+}
+
+// Apply current filter and render cron builds
+function applyCronFilterAndRender() {
+    let filtered = filterBranchBuilds(state.lastCronBuilds, state.cronFilter);
+    filtered = sortCronBuilds(filtered, state.cronSortMode);
+    renderCronCards(filtered, elements.cronCards);
+}
+
+// Sort cron builds (reuses same logic as branch builds)
+function sortCronBuilds(builds, sortMode) {
+    return [...builds].sort((a, b) => {
+        switch (sortMode) {
+            case 'status':
+                const statusOrder = { running: 0, pending: 1, failure: 2, error: 2, success: 3, killed: 4, skipped: 5 };
+                return (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99);
+            case 'time':
+                return (b.created || 0) - (a.created || 0);
+            case 'name':
+                return (a.branch || '').localeCompare(b.branch || '');
+            default:
+                return 0;
+        }
+    });
 }
 
 // Refresh all data (called by keyboard shortcut R)

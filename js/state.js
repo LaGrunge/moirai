@@ -25,6 +25,11 @@ export const state = {
     overviewHeadBuilds: true,  // Toggle: true = head/cron builds, false = all builds
     lastBranchBuilds: [],
     
+    // Cron tab state (mirrors branch state)
+    cronSortMode: 'status',
+    cronFilter: '',
+    lastCronBuilds: [],
+    
     // Settings
     settings: {
         filterEmptyRepos: true,
