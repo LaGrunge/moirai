@@ -261,29 +261,29 @@
     overflow: hidden;
 }
 
-.chart-bar {
+.contributor-chart .chart-bar {
     height: 100%;
     transition: opacity 0.2s, filter 0.2s;
     min-width: 2px;
 }
 
-.chart-bar:hover {
+.contributor-chart .chart-bar:hover {
     filter: brightness(1.1);
 }
 
-.chart-bar.expanded {
+.contributor-chart .chart-bar.expanded {
     filter: brightness(0.9);
 }
 
-.chart-bar.success {
+.contributor-chart .chart-bar.success {
     background-color: var(--success-color);
 }
 
-.chart-bar.failure {
+.contributor-chart .chart-bar.failure {
     background-color: var(--failure-color);
 }
 
-.chart-bar.other {
+.contributor-chart .chart-bar.other {
     background-color: var(--text-secondary);
 }
 

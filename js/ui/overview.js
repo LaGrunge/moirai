@@ -467,7 +467,6 @@ function renderBarChart(trendData, field, label) {
         const barHeight = (value / maxValue) * chartHeight;
         const x = padding.left + (i * (chartWidth / trendData.length)) + 1;
         const y = padding.top + chartHeight - barHeight;
-        const dateLabel = d.date.slice(5); // MM-DD format
 
         return `
             <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" 
@@ -483,7 +482,7 @@ function renderBarChart(trendData, field, label) {
         .filter((_, i) => i % step === 0)
         .map((d, i) => {
             const x = padding.left + (i * step * (chartWidth / trendData.length)) + barWidth / 2;
-            return `<text x="${x}" y="${height - 5}" class="chart-label">${d.date.slice(5)}</text>`;
+            return `<text x="${x}" y="${height - 8}" class="chart-label">${d.date.slice(5)}</text>`;
         }).join('');
 
     // Y-axis labels
