@@ -240,14 +240,27 @@
 }
 
 .cost-summary {
-    display: flex;
-    gap: 24px;
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: 8px 32px;
     margin-bottom: 12px;
+    justify-content: start;
 }
 
 .cost-item {
-    display: flex;
-    flex-direction: column;
+    display: contents;
+}
+
+.cost-item .cost-value {
+    grid-row: 1;
+    line-height: 1;
+    align-self: end;
+}
+
+.cost-item .cost-label {
+    grid-row: 2;
+    line-height: 1;
+    align-self: start;
 }
 
 .cost-item.main .cost-value {
@@ -460,8 +473,8 @@
     }
     
     .cost-summary {
-        flex-wrap: wrap;
-        gap: 16px;
+        grid-template-columns: repeat(3, auto);
+        gap: 6px 16px;
     }
     
     /* Tables with horizontal scroll */
