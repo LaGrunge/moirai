@@ -540,12 +540,127 @@
         order: -1 !important;
     }
     
+    .contrib-leaderboard {
+        padding: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
     .leaderboard-table {
-        font-size: 0.875rem;
+        font-size: 0.8rem;
+        min-width: 600px;
     }
     
     .leaderboard-table th,
     .leaderboard-table td {
         padding: 8px 6px;
+        white-space: nowrap;
+    }
+    
+    .contributor-cell {
+        min-width: 120px;
+    }
+    
+    .contributor-name {
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: inline-block;
+    }
+    
+    .builds-breakdown {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .contrib-content {
+        padding: 12px;
+    }
+    
+    .contrib-summary {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .contrib-stat {
+        padding: 12px 20px;
+    }
+    
+    .contrib-stat-value {
+        font-size: 2rem;
+    }
+    
+    .contrib-leaderboard {
+        padding: 10px;
+    }
+    
+    .contrib-leaderboard h3 {
+        font-size: 1rem;
+        margin-bottom: 12px;
+    }
+    
+    .leaderboard-table {
+        font-size: 0.75rem;
+        min-width: 500px;
+    }
+    
+    .leaderboard-table th,
+    .leaderboard-table td {
+        padding: 6px 4px;
+    }
+    
+    .rank-cell {
+        width: 36px;
+        font-size: 1rem;
+    }
+    
+    .contributor-avatar-small {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .contributor-info {
+        gap: 6px;
+    }
+    
+    .chart-row-label {
+        width: 120px;
+        min-width: 120px;
+        font-size: 0.8rem;
+    }
+    
+    .chart-row-builds {
+        margin-left: 0;
+    }
+
+    .contrib-chart-card {
+        padding: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .contrib-chart-html {
+        min-width: 320px;
+    }
+
+    .builds-list-item {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .builds-list-item .build-branch {
+        min-width: 80px;
+        max-width: 100px;
+    }
+
+    .builds-list-item .build-message {
+        width: 100%;
+        order: 10;
+    }
+
+    .builds-list-item .build-time {
+        min-width: 60px;
     }
 }

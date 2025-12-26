@@ -176,7 +176,40 @@
 
 /* Responsive stats */
 @media (max-width: 600px) {
+    .stats-container {
+        padding: 12px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
     .stats-metrics {
         grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .stat-item {
+        padding: 10px 6px;
+    }
+
+    .stat-value {
+        font-size: 0.9rem;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+    }
+
+    .histogram-container {
+        min-width: 280px;
+    }
+}
+
+@media (max-width: 400px) {
+    .stats-metrics {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .stat-value {
+        font-size: 0.85rem;
     }
 }

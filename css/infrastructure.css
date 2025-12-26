@@ -430,8 +430,13 @@
 
 /* Responsive Infrastructure */
 @media (max-width: 768px) {
+    .infra-content {
+        padding: 12px;
+    }
+    
     .infra-grid {
         grid-template-columns: 1fr;
+        gap: 16px;
     }
     
     .infra-header {
@@ -439,7 +444,82 @@
         gap: 16px;
     }
     
+    .infra-card {
+        padding: 16px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
     .duration-stats {
         grid-template-columns: 1fr;
+    }
+    
+    .queue-stats {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .cost-summary {
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+    
+    /* Tables with horizontal scroll */
+    .failures-table,
+    .expensive-builds-table {
+        min-width: 500px;
+    }
+    
+    .failures-table th,
+    .failures-table td,
+    .expensive-builds-table th,
+    .expensive-builds-table td {
+        padding: 8px;
+        white-space: nowrap;
+    }
+    
+    .problem-item,
+    .long-build-item,
+    .branch-cost-item {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .aws-instance-item {
+        flex-wrap: wrap;
+    }
+    
+    .instance-name {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .infra-content {
+        padding: 10px;
+    }
+    
+    .infra-card {
+        padding: 12px;
+    }
+    
+    .infra-card h3 {
+        font-size: 0.9rem;
+    }
+    
+    .queue-value {
+        font-size: 1.5rem;
+    }
+    
+    .cost-item.main .cost-value {
+        font-size: 1.5rem;
+    }
+    
+    .cost-value {
+        font-size: 1.25rem;
+    }
+    
+    .duration-value {
+        font-size: 1rem;
     }
 }

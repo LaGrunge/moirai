@@ -239,8 +239,24 @@
         justify-content: center;
     }
 
+    .overview-toggles {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
     .overview-period-select {
         width: 100%;
+    }
+
+    .builds-toggle-group {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .builds-toggle {
+        flex: 1;
+        text-align: center;
     }
 
     .kpi-card {
@@ -257,6 +273,22 @@
 
     .chart-card {
         padding: 16px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .branch-breakdown-card {
+        padding: 16px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .branch-breakdown-item {
+        flex-wrap: wrap;
+    }
+
+    .branch-bar {
+        width: 80px;
     }
 }
 
