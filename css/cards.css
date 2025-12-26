@@ -143,6 +143,19 @@
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
+.card.highlight {
+    animation: card-highlight 2s ease-out;
+}
+
+@keyframes card-highlight {
+    0% {
+        box-shadow: 0 0 0 4px var(--primary-color);
+    }
+    100% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+}
+
 .card-status-bar {
     padding: 0.5rem 1.25rem;
     background-color: var(--card-bg);

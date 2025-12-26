@@ -5,6 +5,7 @@ import { fetchBuildsForPeriod } from '../api.js';
 import { normalizeBuild } from '../builds.js';
 import { formatSeconds, formatTimeAgo, escapeHtml } from '../utils.js';
 import { getDefaultStatsPeriod } from '../stats.js';
+import { switchToTab } from './tabs.js';
 
 // Store overview data for toggle functionality
 let overviewAllBuilds = [];
@@ -108,18 +109,30 @@ function calculateOverviewStats(builds, periodDays) {
                 success: 0, 
                 failure: 0,
                 lastBuild: null,
-                lastStatus: null
+                lastStatus: null,
+                isCron: false,
+                cronCount: 0
             };
         }
         branchStats[branch].total++;
         if (build.status === 'success') branchStats[branch].success++;
         if (build.status === 'failure' || build.status === 'error') branchStats[branch].failure++;
         
+        // Track if this branch has cron builds
+        if (build.event === 'cron') {
+            branchStats[branch].cronCount++;
+        }
+        
         // Track last build
         if (!branchStats[branch].lastBuild || build.created > branchStats[branch].lastBuild.created) {
             branchStats[branch].lastBuild = build;
             branchStats[branch].lastStatus = build.status;
         }
+    });
+    
+    // Mark branches as cron if majority of builds are cron
+    Object.values(branchStats).forEach(b => {
+        b.isCron = b.cronCount > 0 && (b.cronCount / b.total) > 0.5;
     });
 
     const totalBuilds = builds.length;
@@ -357,8 +370,10 @@ function renderBranchBreakdown(branches) {
         
         const lastBuildTime = b.lastBuild ? formatTimeAgo(b.lastBuild.created) : 'N/A';
         
+        const targetTab = b.isCron ? 'Cron' : 'Branches';
+        
         return `
-            <div class="branch-breakdown-item status-${statusClass}">
+            <div class="branch-breakdown-item status-${statusClass}" data-branch="${escapeHtml(b.branch)}" data-is-cron="${b.isCron}" title="Click to view in ${targetTab} tab">
                 <div class="branch-status-icon">${statusIcon}</div>
                 <div class="branch-info">
                     <div class="branch-name">${escapeHtml(b.branch)}</div>
@@ -600,4 +615,49 @@ export function initOverviewPeriodHandler(container) {
             }
         });
     }
+    
+    // Branch breakdown click handlers - navigate to appropriate tab with filter
+    container.querySelectorAll('.branch-breakdown-item').forEach(item => {
+        item.style.cursor = 'pointer';
+        item.addEventListener('click', () => {
+            const branchName = item.dataset.branch;
+            const isCron = item.dataset.isCron === 'true';
+            if (branchName) {
+                navigateToBranch(branchName, isCron);
+            }
+        });
+    });
+}
+
+// Navigate to Branches or Cron tab and filter by branch name
+function navigateToBranch(branchName, isCron) {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    // Switch to appropriate tab
+    const targetTab = isCron ? 'cron' : 'branches';
+    switchToTab(targetTab, tabButtons, tabContents);
+    
+    // Set filter to branch name (only for branches tab)
+    if (!isCron) {
+        const branchFilter = document.getElementById('branch-filter');
+        if (branchFilter) {
+            branchFilter.value = branchName;
+            branchFilter.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    }
+    
+    // Scroll to and highlight the matching card
+    setTimeout(() => {
+        const cards = document.querySelectorAll(`#${targetTab}-cards .build-card, #${targetTab}-cards .cron-card`);
+        for (const card of cards) {
+            const cardBranch = card.querySelector('.card-branch, .cron-branch');
+            if (cardBranch && cardBranch.textContent.includes(branchName)) {
+                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                card.classList.add('highlight');
+                setTimeout(() => card.classList.remove('highlight'), 2000);
+                break;
+            }
+        }
+    }, 100);
 }
