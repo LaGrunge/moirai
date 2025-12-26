@@ -295,6 +295,25 @@
     color: var(--text-color);
 }
 
+/* Contributor links */
+.contributor-link {
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s ease;
+}
+
+.contributor-link:hover {
+    opacity: 0.8;
+}
+
+.podium-name .contributor-link {
+    color: var(--text-color);
+}
+
+.podium-name .contributor-link:hover {
+    color: var(--primary-color);
+}
+
 .builds-count {
     font-weight: 600;
     color: var(--text-color);

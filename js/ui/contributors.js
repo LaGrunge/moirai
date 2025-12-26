@@ -2,7 +2,7 @@
 
 import { state } from '../state.js';
 import { fetchBuildsForPeriod } from '../api.js';
-import { formatTimeAgo, escapeHtml } from '../utils.js';
+import { formatTimeAgo, escapeHtml, getUserProfileUrl } from '../utils.js';
 import { getDefaultStatsPeriod } from '../stats.js';
 import { createPeriodHandler } from './periodHandler.js';
 
@@ -215,24 +215,24 @@ function renderPodium(topContributors) {
         <div class="podium">
             <div class="podium-place second">
                 ${second ? `
-                    <div class="podium-avatar">${getAvatarHtml(second)}</div>
-                    <div class="podium-name">${escapeHtml(second.name)}</div>
+                    <div class="podium-avatar">${getAvatarHtml(second, true)}</div>
+                    <div class="podium-name">${getNameHtml(second)}</div>
                     <div class="podium-builds">${second.totalBuilds} builds</div>
                     <div class="podium-medal">🥈</div>
                     <div class="podium-pedestal">2</div>
                 ` : '<div class="podium-empty">-</div>'}
             </div>
             <div class="podium-place first">
-                <div class="podium-avatar">${getAvatarHtml(first)}</div>
-                <div class="podium-name">${escapeHtml(first.name)}</div>
+                <div class="podium-avatar">${getAvatarHtml(first, true)}</div>
+                <div class="podium-name">${getNameHtml(first)}</div>
                 <div class="podium-builds">${first.totalBuilds} builds</div>
                 <div class="podium-medal">🥇</div>
                 <div class="podium-pedestal">1</div>
             </div>
             <div class="podium-place third">
                 ${third ? `
-                    <div class="podium-avatar">${getAvatarHtml(third)}</div>
-                    <div class="podium-name">${escapeHtml(third.name)}</div>
+                    <div class="podium-avatar">${getAvatarHtml(third, true)}</div>
+                    <div class="podium-name">${getNameHtml(third)}</div>
                     <div class="podium-builds">${third.totalBuilds} builds</div>
                     <div class="podium-medal">🥉</div>
                     <div class="podium-pedestal">3</div>
@@ -242,21 +242,40 @@ function renderPodium(topContributors) {
     `;
 }
 
-// Get avatar HTML
-function getAvatarHtml(contributor) {
+// Get avatar HTML (optionally wrapped in link)
+function getAvatarHtml(contributor, withLink = false) {
+    let avatarContent;
     if (contributor.avatar) {
-        return `<img src="${contributor.avatar}" alt="${escapeHtml(contributor.name)}" class="avatar-img" />`;
+        avatarContent = `<img src="${contributor.avatar}" alt="${escapeHtml(contributor.name)}" class="avatar-img" />`;
+    } else {
+        // Generate initials avatar
+        const initials = contributor.name
+            .split(/[\s._-]+/)
+            .map(part => part[0] || '')
+            .slice(0, 2)
+            .join('')
+            .toUpperCase();
+        const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e'];
+        const colorIndex = contributor.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
+        avatarContent = `<div class="avatar-initials" style="background-color: ${colors[colorIndex]}">${initials}</div>`;
     }
-    // Generate initials avatar
-    const initials = contributor.name
-        .split(/[\s._-]+/)
-        .map(part => part[0] || '')
-        .slice(0, 2)
-        .join('')
-        .toUpperCase();
-    const colors = ['#3498db', '#e74c3c', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#e67e22', '#34495e'];
-    const colorIndex = contributor.name.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % colors.length;
-    return `<div class="avatar-initials" style="background-color: ${colors[colorIndex]}">${initials}</div>`;
+    
+    if (withLink) {
+        const profileUrl = getUserProfileUrl(contributor.name, state.currentRepo, contributor.avatar);
+        if (profileUrl) {
+            return `<a href="${profileUrl}" target="_blank" rel="noopener noreferrer" class="contributor-link">${avatarContent}</a>`;
+        }
+    }
+    return avatarContent;
+}
+
+// Get contributor name HTML (optionally wrapped in link)
+function getNameHtml(contributor) {
+    const profileUrl = getUserProfileUrl(contributor.name, state.currentRepo, contributor.avatar);
+    if (profileUrl) {
+        return `<a href="${profileUrl}" target="_blank" rel="noopener noreferrer" class="contributor-link">${escapeHtml(contributor.name)}</a>`;
+    }
+    return escapeHtml(contributor.name);
 }
 
 // Render contributor bar chart
@@ -335,8 +354,8 @@ function renderLeaderboardTable(contributors) {
                         </td>
                         <td class="contributor-cell">
                             <div class="contributor-info">
-                                <div class="contributor-avatar-small">${getAvatarHtml(c)}</div>
-                                <span class="contributor-name">${escapeHtml(c.name)}</span>
+                                <div class="contributor-avatar-small">${getAvatarHtml(c, true)}</div>
+                                <span class="contributor-name">${getNameHtml(c)}</span>
                             </div>
                         </td>
                         <td>

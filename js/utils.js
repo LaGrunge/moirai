@@ -102,3 +102,49 @@ export function getStatusText(status) {
     };
     return statusMap[status] || status;
 }
+
+// Get forge base URL from repository data or avatar URL
+export function getForgeBaseUrl(repo, avatarUrl = null) {
+    // Try to extract from repo link/clone_url
+    if (repo) {
+        const link = repo.link || repo.clone_url || repo.html_url || '';
+        if (link) {
+            try {
+                const url = new URL(link.replace(/\.git$/, ''));
+                return `${url.protocol}//${url.host}`;
+            } catch (e) {
+                // Invalid URL, continue to other methods
+            }
+        }
+    }
+    
+    // Try to extract from avatar URL (e.g., https://github.com/user.png)
+    if (avatarUrl) {
+        try {
+            const url = new URL(avatarUrl);
+            // GitHub avatars: avatars.githubusercontent.com -> github.com
+            if (url.host.includes('githubusercontent.com')) {
+                return 'https://github.com';
+            }
+            // GitLab avatars: gitlab.com/uploads/... -> gitlab.com
+            if (url.host.includes('gitlab')) {
+                return `${url.protocol}//${url.host}`;
+            }
+            // Gitea/other: usually same host
+            return `${url.protocol}//${url.host}`;
+        } catch (e) {
+            // Invalid URL
+        }
+    }
+    
+    return null;
+}
+
+// Get user profile URL
+export function getUserProfileUrl(username, repo, avatarUrl = null) {
+    const baseUrl = getForgeBaseUrl(repo, avatarUrl);
+    if (baseUrl && username) {
+        return `${baseUrl}/${username}`;
+    }
+    return null;
+}
