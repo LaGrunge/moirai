@@ -5,16 +5,16 @@
     background: none;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 8px;
-    padding: 0.5rem;
+    padding: 0.6rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
     color: white;
-    font-size: 1.25rem;
-    width: 40px;
-    height: 40px;
+    font-size: 1.5rem;
+    width: 48px;
+    height: 48px;
 }
 
 .demo-toggle:hover {
@@ -32,16 +32,16 @@
     background: none;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 8px;
-    padding: 0.5rem;
+    padding: 0.6rem;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
     color: white;
-    font-size: 1.25rem;
-    width: 40px;
-    height: 40px;
+    font-size: 1.5rem;
+    width: 48px;
+    height: 48px;
 }
 
 .theme-toggle:hover {
