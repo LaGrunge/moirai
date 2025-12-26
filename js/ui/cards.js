@@ -171,21 +171,22 @@ export function renderBranchCards(builds, container) {
 function attachCardClickHandlers(container) {
     container.querySelectorAll('.card-wrapper').forEach(wrapper => {
         const card = wrapper.querySelector('.card');
-        const statsBtn = wrapper.querySelector('.stats-btn');
+        const cardActions = wrapper.querySelector('.card-actions');
 
         // Card click -> open build URL
         if (card) {
             card.style.cursor = 'pointer';
             card.addEventListener('click', (e) => {
-                if (e.target.closest('a') || e.target.closest('button')) return;
+                if (e.target.closest('a') || e.target.closest('.card-actions')) return;
                 const url = card.dataset.buildUrl;
                 if (url) window.open(url, '_blank');
             });
         }
 
-        // Stats button click -> toggle stats panel
-        if (statsBtn) {
-            statsBtn.addEventListener('click', (e) => {
+        // Card actions block click -> toggle stats panel
+        if (cardActions) {
+            cardActions.style.cursor = 'pointer';
+            cardActions.addEventListener('click', (e) => {
                 e.stopPropagation();
                 // Decode base64 encoded branch/PR name
                 const encodedBranch = wrapper.dataset.branch;
