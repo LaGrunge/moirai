@@ -83,7 +83,7 @@ from the first commit to the final outcome.
 
 A unified dashboard for monitoring **Woodpecker CI** and **Drone CI** pipelines.
 
-![CI Dashboard](favicon.svg)
+![Moirai Dashboard](assets/moirai.png)
 
 ## Features
 

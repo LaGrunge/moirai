@@ -1,4 +1,4 @@
-// CI Dashboard Application - Main Entry Point
+// Moirai Dashboard - Main Entry Point
 // Supports both Woodpecker and Drone CI
 
 import { state, loadSettings, loadSavedConfigs, saveSavedConfigs } from './state.js';

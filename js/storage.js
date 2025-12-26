@@ -2,11 +2,11 @@
 // All storage keys and operations in one place
 
 const STORAGE_KEYS = {
-    SETTINGS: 'ci_dashboard_settings',
-    SAVED_CONFIGS: 'ci_dashboard_saved_configs',
-    SELECTED_CONFIG: 'ci_dashboard_selected_config',
-    THEME: 'ci_dashboard_theme',
-    DEMO_MODE: 'ci_dashboard_demo_mode'
+    SETTINGS: 'moirai_settings',
+    SAVED_CONFIGS: 'moirai_saved_configs',
+    SELECTED_CONFIG: 'moirai_selected_config',
+    THEME: 'moirai_theme',
+    DEMO_MODE: 'moirai_demo_mode'
 };
 
 // Generic get/set with JSON parsing

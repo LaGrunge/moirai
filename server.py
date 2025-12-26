@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-CI Dashboard Server with API Proxy
+Moirai Dashboard Server with API Proxy
 Serves static files and proxies API requests to CI servers with tokens.
 Tokens are stored server-side and never exposed to the browser.
 """

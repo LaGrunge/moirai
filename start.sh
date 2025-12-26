@@ -48,7 +48,7 @@ if ! python3 -c "import flask" 2>/dev/null; then
 fi
 
 # Start Flask server
-echo "Starting CI Dashboard on http://localhost:${PORT}"
+echo "Starting Moirai Dashboard on http://localhost:${PORT}"
 echo "Tokens are kept server-side and never exposed to the browser."
 
 # Use sudo for privileged ports (< 1024), but use venv python
