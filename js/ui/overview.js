@@ -51,6 +51,9 @@ function calculateOverviewStats(builds, periodDays) {
     let totalDuration = 0;
     let finishedCount = 0;
 
+    // Group builds by day for trend charts
+    const dailyStats = {};
+
     builds.forEach(build => {
         if (statusCounts.hasOwnProperty(build.status)) {
             statusCounts[build.status]++;
@@ -58,6 +61,19 @@ function calculateOverviewStats(builds, periodDays) {
         if (build.started && build.finished) {
             totalDuration += build.finished - build.started;
             finishedCount++;
+        }
+
+        // Group by day
+        const date = new Date(build.created * 1000).toISOString().split('T')[0];
+        if (!dailyStats[date]) {
+            dailyStats[date] = { total: 0, success: 0, failure: 0, totalDuration: 0, finishedCount: 0 };
+        }
+        dailyStats[date].total++;
+        if (build.status === 'success') dailyStats[date].success++;
+        if (build.status === 'failure' || build.status === 'error') dailyStats[date].failure++;
+        if (build.started && build.finished) {
+            dailyStats[date].totalDuration += build.finished - build.started;
+            dailyStats[date].finishedCount++;
         }
     });
 
@@ -94,6 +110,22 @@ function calculateOverviewStats(builds, periodDays) {
         ? (totalBuilds / periodDays).toFixed(1) 
         : 0;
 
+    // Generate daily trend data (sorted by date)
+    const trendData = Object.entries(dailyStats)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([date, stats]) => ({
+            date,
+            total: stats.total,
+            success: stats.success,
+            failure: stats.failure,
+            avgDuration: stats.finishedCount > 0 
+                ? Math.round(stats.totalDuration / stats.finishedCount) 
+                : null,
+            successRate: stats.total > 0 
+                ? Math.round((stats.success / stats.total) * 100) 
+                : 0
+        }));
+
     return {
         totalBuilds,
         successRate,
@@ -103,7 +135,8 @@ function calculateOverviewStats(builds, periodDays) {
         healthColor,
         healthText,
         buildsPerDay,
-        periodDays
+        periodDays,
+        trendData
     };
 }
 
@@ -168,6 +201,14 @@ export function renderOverview(container, stats) {
                     <div class="pie-legend">
                         ${renderPieLegend(pieData)}
                     </div>
+                </div>
+                <div class="chart-card">
+                    <h3>Build Activity (per day)</h3>
+                    ${renderBarChart(stats.trendData, 'total', 'Builds')}
+                </div>
+                <div class="chart-card">
+                    <h3>Success Rate Trend</h3>
+                    ${renderLineChart(stats.trendData, 'successRate', '%')}
                 </div>
             </div>
         </div>
@@ -264,6 +305,131 @@ function renderPieLegend(data) {
             <span class="legend-value">${item.count} (${item.percentage}%)</span>
         </div>
     `).join('');
+}
+
+// Render bar chart for daily data
+function renderBarChart(trendData, field, label) {
+    if (!trendData || trendData.length === 0) {
+        return '<div class="no-data">No trend data available</div>';
+    }
+
+    const width = 400;
+    const height = 150;
+    const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    const maxValue = Math.max(...trendData.map(d => d[field] || 0), 1);
+    const barWidth = Math.max(4, (chartWidth / trendData.length) - 2);
+
+    const bars = trendData.map((d, i) => {
+        const value = d[field] || 0;
+        const barHeight = (value / maxValue) * chartHeight;
+        const x = padding.left + (i * (chartWidth / trendData.length)) + 1;
+        const y = padding.top + chartHeight - barHeight;
+        const dateLabel = d.date.slice(5); // MM-DD format
+
+        return `
+            <rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" 
+                  fill="var(--primary-color)" rx="2" class="chart-bar">
+                <title>${d.date}: ${value} ${label}</title>
+            </rect>
+        `;
+    }).join('');
+
+    // X-axis labels (show every few days)
+    const step = Math.ceil(trendData.length / 7);
+    const xLabels = trendData
+        .filter((_, i) => i % step === 0)
+        .map((d, i) => {
+            const x = padding.left + (i * step * (chartWidth / trendData.length)) + barWidth / 2;
+            return `<text x="${x}" y="${height - 5}" class="chart-label">${d.date.slice(5)}</text>`;
+        }).join('');
+
+    // Y-axis labels
+    const yLabels = [0, Math.round(maxValue / 2), maxValue].map((v, i) => {
+        const y = padding.top + chartHeight - (i * chartHeight / 2);
+        return `<text x="${padding.left - 5}" y="${y + 4}" class="chart-label" text-anchor="end">${v}</text>`;
+    }).join('');
+
+    return `
+        <svg viewBox="0 0 ${width} ${height}" class="bar-chart">
+            ${bars}
+            ${xLabels}
+            ${yLabels}
+            <line x1="${padding.left}" y1="${padding.top + chartHeight}" 
+                  x2="${width - padding.right}" y2="${padding.top + chartHeight}" 
+                  stroke="var(--border-color)" />
+        </svg>
+    `;
+}
+
+// Render line chart for trend data
+function renderLineChart(trendData, field, unit) {
+    if (!trendData || trendData.length === 0) {
+        return '<div class="no-data">No trend data available</div>';
+    }
+
+    const width = 400;
+    const height = 150;
+    const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+    const chartWidth = width - padding.left - padding.right;
+    const chartHeight = height - padding.top - padding.bottom;
+
+    const values = trendData.map(d => d[field] || 0);
+    const maxValue = Math.max(...values, 1);
+    const minValue = Math.min(...values);
+
+    // Generate line path
+    const points = trendData.map((d, i) => {
+        const value = d[field] || 0;
+        const x = padding.left + (i / (trendData.length - 1 || 1)) * chartWidth;
+        const y = padding.top + chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
+        return `${x},${y}`;
+    });
+
+    const linePath = `M ${points.join(' L ')}`;
+
+    // Area fill
+    const areaPath = `M ${padding.left},${padding.top + chartHeight} L ${points.join(' L ')} L ${padding.left + chartWidth},${padding.top + chartHeight} Z`;
+
+    // Data points
+    const dots = trendData.map((d, i) => {
+        const value = d[field] || 0;
+        const x = padding.left + (i / (trendData.length - 1 || 1)) * chartWidth;
+        const y = padding.top + chartHeight - ((value - minValue) / (maxValue - minValue || 1)) * chartHeight;
+        return `<circle cx="${x}" cy="${y}" r="3" fill="var(--primary-color)" class="chart-dot">
+            <title>${d.date}: ${value}${unit}</title>
+        </circle>`;
+    }).join('');
+
+    // Y-axis labels
+    const yLabels = [minValue, Math.round((maxValue + minValue) / 2), maxValue].map((v, i) => {
+        const y = padding.top + chartHeight - (i * chartHeight / 2);
+        return `<text x="${padding.left - 5}" y="${y + 4}" class="chart-label" text-anchor="end">${v}${unit}</text>`;
+    }).join('');
+
+    // X-axis labels
+    const step = Math.ceil(trendData.length / 7);
+    const xLabels = trendData
+        .filter((_, i) => i % step === 0)
+        .map((d, i) => {
+            const x = padding.left + (i * step / (trendData.length - 1 || 1)) * chartWidth;
+            return `<text x="${x}" y="${height - 5}" class="chart-label">${d.date.slice(5)}</text>`;
+        }).join('');
+
+    return `
+        <svg viewBox="0 0 ${width} ${height}" class="line-chart">
+            <path d="${areaPath}" fill="var(--primary-color)" opacity="0.1" />
+            <path d="${linePath}" fill="none" stroke="var(--primary-color)" stroke-width="2" />
+            ${dots}
+            ${xLabels}
+            ${yLabels}
+            <line x1="${padding.left}" y1="${padding.top + chartHeight}" 
+                  x2="${width - padding.right}" y2="${padding.top + chartHeight}" 
+                  stroke="var(--border-color)" />
+        </svg>
+    `;
 }
 
 // Initialize overview tab

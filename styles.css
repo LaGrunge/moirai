@@ -1181,6 +1181,36 @@ a.commit-sha:hover {
     color: var(--failure-color);
 }
 
+.bar-chart,
+.line-chart {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+}
+
+.chart-bar {
+    transition: opacity 0.2s ease;
+}
+
+.chart-bar:hover {
+    opacity: 0.8;
+}
+
+.chart-dot {
+    transition: r 0.2s ease;
+}
+
+.chart-dot:hover {
+    r: 5;
+}
+
+.chart-label {
+    font-size: 10px;
+    fill: var(--text-secondary);
+}
+
 /* Responsive overview */
 @media (max-width: 768px) {
     .overview-kpi-grid {
