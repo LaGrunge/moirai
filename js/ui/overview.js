@@ -5,7 +5,7 @@ import { fetchBuildsForPeriod } from '../api.js';
 import { normalizeBuild } from '../builds.js';
 import { formatSeconds, formatTimeAgo, escapeHtml } from '../utils.js';
 import { getDefaultStatsPeriod } from '../stats.js';
-import { switchToTab } from './tabs.js';
+import { switchToTab, pushFilterState } from './tabs.js';
 
 // Store overview data for toggle functionality
 let overviewAllBuilds = [];
@@ -646,6 +646,9 @@ function navigateToBranch(branchName, isCron) {
         filterInput.value = branchName;
         filterInput.dispatchEvent(new Event('input', { bubbles: true }));
     }
+    
+    // Push to history for back button support
+    pushFilterState(targetTab, branchName);
     
     // Scroll to and highlight the matching card
     setTimeout(() => {
