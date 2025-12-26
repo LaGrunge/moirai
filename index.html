@@ -156,6 +156,21 @@
                 </div>
 
                 <div class="settings-section">
+                    <h3>Data Fetching</h3>
+                    <div class="setting-item">
+                        <label for="setting-builds-limit" class="setting-label">Builds to fetch</label>
+                        <select id="setting-builds-limit" class="form-select setting-select">
+                            <option value="50">50 builds</option>
+                            <option value="100">100 builds</option>
+                            <option value="250" selected>250 builds</option>
+                            <option value="500">500 builds</option>
+                            <option value="1000">1000 builds</option>
+                        </select>
+                        <span class="setting-description">Maximum number of builds to fetch from CI server. Higher values provide more data but may be slower.</span>
+                    </div>
+                </div>
+
+                <div class="settings-section">
                     <h3>Cost Estimation</h3>
                     <div class="setting-item" id="cpu-cost-setting">
                         <label for="setting-cpu-cost" class="setting-label">CPU cost per hour ($)</label>

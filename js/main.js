@@ -4,7 +4,7 @@
 import { state, loadSettings, loadSavedConfigs, saveSavedConfigs } from './state.js';
 import { storage } from './storage.js';
 import { initGlobalErrorHandlers } from './errors.js';
-import { apiRequest, getBuildsEndpoint, getExistingBranches, getOpenPullRequests, autoDetectServerTypes, loadServersFromProxy } from './api.js';
+import { apiRequest, fetchAllBuilds, getExistingBranches, getOpenPullRequests, autoDetectServerTypes, loadServersFromProxy } from './api.js';
 import { normalizeBuild, groupByBranch, groupByCron, sortBranchBuilds, filterBranchBuilds } from './builds.js';
 import { initTheme } from './ui/theme.js';
 import { initTabs, switchToTab } from './ui/tabs.js';
@@ -334,7 +334,7 @@ async function loadBranchBuilds() {
     try {
         // Fetch builds, existing branches, and open PRs in parallel
         const [builds, existingBranches, openPRs] = await Promise.all([
-            apiRequest(getBuildsEndpoint()),
+            fetchAllBuilds(),
             getExistingBranches(),
             getOpenPullRequests()
         ]);
@@ -374,8 +374,7 @@ async function loadCronBuilds() {
     showLoading(elements.cronCards);
 
     try {
-        const endpoint = getBuildsEndpoint();
-        const builds = await apiRequest(endpoint);
+        const builds = await fetchAllBuilds();
         const normalizedBuilds = builds.map(normalizeBuild);
         const cronBuilds = normalizedBuilds.filter(b => b.event === 'cron');
 

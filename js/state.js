@@ -34,7 +34,8 @@ export const state = {
     settings: {
         filterEmptyRepos: true,
         statsPeriodDays: 30,  // Default period for statistics
-        cpuCostPerHour: 0.05  // Cost per CPU-hour for estimation
+        cpuCostPerHour: 0.05,  // Cost per CPU-hour for estimation
+        buildsPerPage: 250  // Number of builds to fetch
     },
     
     // AWS status (loaded from server)

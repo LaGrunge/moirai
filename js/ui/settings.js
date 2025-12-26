@@ -42,6 +42,16 @@ export function initSettings(elements, callbacks) {
         });
     }
     
+    // Initialize builds limit setting
+    const buildsLimitSelect = document.getElementById('setting-builds-limit');
+    if (buildsLimitSelect) {
+        buildsLimitSelect.value = state.settings.buildsPerPage || 250;
+        buildsLimitSelect.addEventListener('change', (e) => {
+            state.settings.buildsPerPage = parseInt(e.target.value);
+            saveSettings();
+        });
+    }
+    
     // Initialize CPU cost setting
     const cpuCostInput = document.getElementById('setting-cpu-cost');
     const cpuCostSetting = document.getElementById('cpu-cost-setting');

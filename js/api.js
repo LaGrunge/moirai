@@ -94,19 +94,51 @@ export async function detectCIType(serverId) {
 }
 
 // Get builds endpoint based on CI type
-export function getBuildsEndpoint(perPage = DEFAULT_BUILDS_PER_PAGE) {
+export function getBuildsEndpoint(perPage = null, page = 1) {
+    // Use setting if no explicit perPage provided
+    const limit = perPage ?? state.settings.buildsPerPage ?? DEFAULT_BUILDS_PER_PAGE;
     const repoFullName = getRepoFullName(state.currentRepo);
 
     if (state.currentServer.type === 'drone') {
-        return `/repos/${repoFullName}/builds?per_page=${perPage}`;
+        // Drone max per_page is 50
+        return `/repos/${repoFullName}/builds?per_page=${Math.min(limit, 50)}&page=${page}`;
     } else {
-        return `/repos/${state.currentRepo.id}/pipelines?per_page=${perPage}`;
+        // Woodpecker max per_page is 50 (but often defaults to 25)
+        return `/repos/${state.currentRepo.id}/pipelines?per_page=${Math.min(limit, 50)}&page=${page}`;
     }
+}
+
+// Fetch all builds with pagination up to the configured limit
+export async function fetchAllBuilds() {
+    const targetCount = state.settings.buildsPerPage ?? DEFAULT_BUILDS_PER_PAGE;
+    const pageSize = 50; // Max supported by both Drone and Woodpecker
+    const allBuilds = [];
+    let page = 1;
+    
+    while (allBuilds.length < targetCount) {
+        const endpoint = getBuildsEndpoint(pageSize, page);
+        const builds = await apiRequest(endpoint);
+        
+        if (!builds || builds.length === 0) {
+            break; // No more builds
+        }
+        
+        allBuilds.push(...builds);
+        
+        if (builds.length < pageSize) {
+            break; // Last page (not full)
+        }
+        
+        page++;
+    }
+    
+    // Trim to target count
+    return allBuilds.slice(0, targetCount);
 }
 
 // Fetch builds with time filter - common pattern used by multiple tabs
 export async function fetchBuildsForPeriod(periodDays) {
-    const allBuilds = await apiRequest(getBuildsEndpoint());
+    const allBuilds = await fetchAllBuilds();
     const cutoffTime = Math.floor(Date.now() / 1000) - (periodDays * SECONDS_IN_DAY);
     return allBuilds.filter(build => {
         const created = build.created || build.created_at;
