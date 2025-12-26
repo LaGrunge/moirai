@@ -219,6 +219,10 @@
     background-color: var(--failure-color);
 }
 
+.legend-dot.other {
+    background-color: var(--text-secondary);
+}
+
 /* Leaderboard */
 .contrib-leaderboard {
     background-color: var(--card-bg);

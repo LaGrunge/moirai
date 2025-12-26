@@ -33,21 +33,32 @@ function normalizeBuildWithAuthor(build) {
         authorLogin = build.author || null;
         authorAvatar = build.author_avatar || null;
         authorEmail = build.author_email || '';
+        // Woodpecker doesn't have separate display name, use login
+        return {
+            ...build,
+            author: authorLogin || 'Unknown',
+            authorLogin,
+            authorDisplayName: authorLogin || 'Unknown',
+            authorAvatar,
+            authorEmail
+        };
     } else {
         // Drone: author_login is the username, author_avatar is the avatar
-        // sender is also available but usually same as author_login
+        // author_name may contain full name (fallback to login)
         authorLogin = build.author_login || build.sender || null;
         authorAvatar = build.author_avatar || null;
         authorEmail = build.author_email || '';
+        // Return display name separately for Drone
+        const displayName = build.author_name || authorLogin || 'Unknown';
+        return {
+            ...build,
+            author: authorLogin || 'Unknown',
+            authorLogin,
+            authorDisplayName: displayName,
+            authorAvatar,
+            authorEmail
+        };
     }
-    
-    return {
-        ...build,
-        author: authorLogin || 'Unknown',  // Username for grouping and profile URL
-        authorLogin,
-        authorAvatar,
-        authorEmail
-    };
 }
 
 // Calculate contributor statistics
@@ -60,13 +71,14 @@ function calculateContributorStats(builds, periodDays) {
         
         if (!contributors[author]) {
             contributors[author] = {
-                name: author,                        // Username (same as login for now)
+                name: authorInfo.authorDisplayName,  // Display name (full name if available)
                 login: authorInfo.authorLogin,       // Username for profile URL
                 email: authorInfo.authorEmail,
                 avatar: authorInfo.authorAvatar,
                 totalBuilds: 0,
                 successBuilds: 0,
                 failedBuilds: 0,
+                otherBuilds: 0,
                 commits: new Set(),
                 branches: new Set(),
                 prs: 0,
@@ -77,6 +89,13 @@ function calculateContributorStats(builds, periodDays) {
         }
 
         const c = contributors[author];
+        
+        // Update name if we find a better one (not empty, different from login)
+        const displayName = authorInfo.authorDisplayName;
+        if (displayName && displayName !== authorInfo.authorLogin && c.name === c.login) {
+            c.name = displayName;
+        }
+        
         c.totalBuilds++;
         
         if (build.status === 'success') {
@@ -88,6 +107,9 @@ function calculateContributorStats(builds, periodDays) {
         } else if (build.status === 'failure' || build.status === 'error') {
             c.failedBuilds++;
             c.currentStreak = 0;
+        } else {
+            // Other statuses: running, pending, killed, skipped, etc.
+            c.otherBuilds++;
         }
 
         if (build.commit) {
@@ -296,6 +318,7 @@ function renderContributorChart(contributors, maxBuilds) {
         const y = i * (barHeight + gap);
         const successWidth = maxBuilds > 0 ? (c.successBuilds / maxBuilds) * chartWidth : 0;
         const failWidth = maxBuilds > 0 ? (c.failedBuilds / maxBuilds) * chartWidth : 0;
+        const otherWidth = maxBuilds > 0 ? ((c.otherBuilds || 0) / maxBuilds) * chartWidth : 0;
 
         return `
             <g transform="translate(0, ${y})">
@@ -307,8 +330,12 @@ function renderContributorChart(contributors, maxBuilds) {
                     <title>${c.name}: ${c.successBuilds} successful</title>
                 </rect>
                 <rect x="${labelWidth + successWidth}" y="0" width="${failWidth}" height="${barHeight}" 
-                      fill="var(--failure-color)" rx="0 4 4 0">
+                      fill="var(--failure-color)" rx="4">
                     <title>${c.name}: ${c.failedBuilds} failed</title>
+                </rect>
+                <rect x="${labelWidth + successWidth + failWidth}" y="0" width="${otherWidth}" height="${barHeight}" 
+                      fill="var(--text-secondary)" rx="4">
+                    <title>${c.name}: ${c.otherBuilds || 0} other (running/pending/killed)</title>
                 </rect>
                 <text x="${labelWidth + barWidth + 10}" y="${barHeight / 2 + 5}" class="chart-value">
                     ${c.totalBuilds}
@@ -324,6 +351,7 @@ function renderContributorChart(contributors, maxBuilds) {
         <div class="chart-legend-inline">
             <span class="legend-item-inline"><span class="legend-dot success"></span> Success</span>
             <span class="legend-item-inline"><span class="legend-dot failure"></span> Failed</span>
+            <span class="legend-item-inline"><span class="legend-dot other"></span> Other</span>
         </div>
     `;
 }
