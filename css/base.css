@@ -79,6 +79,19 @@ body {
     font-weight: 600;
 }
 
+.header-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s ease;
+}
+
+.header-link:hover {
+    opacity: 0.85;
+}
+
 .header-right {
     display: flex;
     align-items: center;
