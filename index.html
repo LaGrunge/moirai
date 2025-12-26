@@ -14,17 +14,14 @@
             <h1>CI Dashboard</h1>
         </div>
         <div class="header-right">
-            <div id="server-select" class="server-select-wrapper">
-                <button class="server-select-btn" id="server-select-btn">
-                    <span class="server-icon"></span>
-                    <span class="server-name">Select server...</span>
+            <div id="config-select" class="config-select-wrapper">
+                <button class="config-select-btn" id="config-select-btn">
+                    <span class="config-icon"></span>
+                    <span class="config-name">Select repository...</span>
                     <span class="dropdown-arrow">▼</span>
                 </button>
-                <div class="server-dropdown" id="server-dropdown"></div>
+                <div class="config-dropdown" id="config-dropdown"></div>
             </div>
-            <select id="repo-select" class="repo-select">
-                <option value="">Select repository...</option>
-            </select>
             <button id="demo-toggle" class="demo-toggle" title="Demo mode OFF - click to enable">
                 <span class="demo-icon">🎭</span>
             </button>
@@ -67,18 +64,49 @@
                 <h2>Settings</h2>
 
                 <div class="settings-section">
-                    <h3>Repository Display</h3>
+                    <h3>Saved Repositories</h3>
+                    <p class="setting-description">Add repositories to monitor. They will appear in the dropdown for quick access.</p>
+                    <div id="saved-configs-list" class="saved-configs-list">
+                        <div class="placeholder">No saved repositories yet</div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Display Options</h3>
                     <label class="setting-item">
                         <input type="checkbox" id="setting-filter-empty-repos" checked>
                         <span class="setting-label">Hide repositories without builds</span>
-                        <span class="setting-description">Only show repositories that have at least one build</span>
+                        <span class="setting-description">When adding a repository, only show repos that have at least one build</span>
                     </label>
                 </div>
 
                 <div class="settings-section">
+                    <h3>Add Repository</h3>
+                    <div class="add-config-form">
+                        <div class="form-row">
+                            <label>Server</label>
+                            <select id="add-config-server" class="form-select">
+                                <option value="">Select server...</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label>Repository</label>
+                            <select id="add-config-repo" class="form-select" disabled>
+                                <option value="">Select server first...</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <label>Display Name (optional)</label>
+                            <input type="text" id="add-config-name" class="form-input" placeholder="e.g. My Project">
+                        </div>
+                        <button id="add-config-btn" class="settings-btn" disabled>Add Repository</button>
+                    </div>
+                </div>
+
+                <div class="settings-section">
                     <h3>Data</h3>
-                    <button id="clear-cache-btn" class="settings-btn">Clear Local Cache</button>
-                    <span class="setting-description">Clears saved server selection and preferences</span>
+                    <button id="clear-cache-btn" class="settings-btn settings-btn-danger">Clear All Data</button>
+                    <span class="setting-description">Clears all saved repositories and preferences</span>
                 </div>
             </div>
         </div>
@@ -89,6 +117,6 @@
     </footer>
 
     <script src="config.js"></script>
-    <script src="app.js"></script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
