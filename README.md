@@ -1,6 +1,14 @@
 
 ## Why **Moirai**
 
+The name **MORAI** can stand for:
+
+**M**ischievous **O**verlords **R**unning **A**ll **I**ntegrations
+
+> Just like the three Fates, Moirai keeps an eye on every pipeline,  
+> orchestrating builds and revealing outcomes — sometimes with a mischievous twist! 
+
+
 In Greek mythology, **the Moirai** are the three Fates who govern the destiny of every being:
 
 - **Clotho** spins the thread of life  

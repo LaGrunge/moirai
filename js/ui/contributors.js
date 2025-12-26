@@ -24,12 +24,6 @@ export async function loadContributorsData(periodDays = null) {
 
 // Normalize build to get author info
 function normalizeBuildWithAuthor(build) {
-    // Debug: log first build to see available fields
-    if (!normalizeBuildWithAuthor._logged) {
-        console.log('[Contributors] Raw build data sample:', build);
-        normalizeBuildWithAuthor._logged = true;
-    }
-    
     // Try various field names used by Woodpecker/Drone
     const author = build.author || 
                    build.sender || 
@@ -150,7 +144,7 @@ function calculateContributorStats(builds, periodDays) {
 export function renderContributors(container, stats) {
     if (!stats) {
         container.innerHTML = `
-            <div class="contrib-placeholder">
+            <div class="tab-placeholder">
                 <p>Select a repository to view contributors</p>
             </div>
         `;
@@ -159,7 +153,7 @@ export function renderContributors(container, stats) {
 
     if (stats.contributors.length === 0) {
         container.innerHTML = `
-            <div class="contrib-placeholder">
+            <div class="tab-placeholder">
                 <p>No build data available for this period</p>
             </div>
         `;
@@ -170,7 +164,7 @@ export function renderContributors(container, stats) {
         <div class="contrib-container">
             <div class="contrib-header">
                 <h2>🏆 Contributors Leaderboard</h2>
-                <select class="contrib-period-select" id="contrib-period">
+                <select class="period-select" id="contrib-period">
                     <option value="7" ${stats.periodDays === 7 ? 'selected' : ''}>Last 7 days</option>
                     <option value="14" ${stats.periodDays === 14 ? 'selected' : ''}>Last 14 days</option>
                     <option value="30" ${stats.periodDays === 30 ? 'selected' : ''}>Last 30 days</option>
@@ -369,7 +363,6 @@ function renderLeaderboardTable(contributors) {
 // Period handler using shared factory
 export const initContribPeriodHandler = createPeriodHandler({
     selectId: 'contrib-period',
-    loadingClass: 'contrib-loading',
     loadingText: 'Loading contributors data...',
     loadData: loadContributorsData,
     render: renderContributors

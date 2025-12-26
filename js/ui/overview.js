@@ -131,7 +131,7 @@ function calculateOverviewStats(builds, periodDays) {
 export function renderOverview(container, stats) {
     if (!stats) {
         container.innerHTML = `
-            <div class="overview-placeholder">
+            <div class="tab-placeholder">
                 <p>Select a repository to view overview</p>
             </div>
         `;
@@ -152,7 +152,7 @@ export function renderOverview(container, stats) {
                     <span class="health-icon">${stats.healthColor}</span>
                     <span class="health-text">${stats.healthText}</span>
                 </div>
-                <select class="overview-period-select" id="overview-period">
+                <select class="period-select" id="overview-period">
                     <option value="7" ${stats.periodDays === 7 ? 'selected' : ''}>Last 7 days</option>
                     <option value="14" ${stats.periodDays === 14 ? 'selected' : ''}>Last 14 days</option>
                     <option value="30" ${stats.periodDays === 30 ? 'selected' : ''}>Last 30 days</option>
@@ -422,7 +422,6 @@ function renderLineChart(trendData, field, unit) {
 // Period handler using shared factory
 export const initOverviewPeriodHandler = createPeriodHandler({
     selectId: 'overview-period',
-    loadingClass: 'overview-loading',
     loadingText: 'Loading...',
     loadData: loadOverviewData,
     render: renderOverview

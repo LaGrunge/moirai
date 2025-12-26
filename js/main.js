@@ -111,6 +111,20 @@ function initBranchToolbar() {
     });
 }
 
+// Shared callbacks object for config management (avoids deep nesting)
+function getConfigCallbacks() {
+    return {
+        renderSavedConfigsList: () => renderSavedConfigsList(elements.savedConfigsList, handleRemoveConfig),
+        populateConfigDropdown: () => populateConfigDropdown(elements.configDropdown, selectConfig),
+        selectConfig
+    };
+}
+
+// Handle remove config using shared callbacks
+function handleRemoveConfig(configId) {
+    removeConfig(configId, elements, getConfigCallbacks());
+}
+
 // Initialize settings tab
 function initSettingsTab() {
     const settingsElements = {
@@ -122,19 +136,7 @@ function initSettingsTab() {
         addConfigBtn: elements.addConfigBtn
     };
 
-    const callbacks = {
-        renderSavedConfigsList: () => renderSavedConfigsList(
-            elements.savedConfigsList,
-            (configId) => removeConfig(configId, elements, {
-                renderSavedConfigsList: () => renderSavedConfigsList(elements.savedConfigsList, (id) => removeConfig(id, elements, callbacks)),
-                populateConfigDropdown: () => populateConfigDropdown(elements.configDropdown, selectConfig)
-            })
-        ),
-        populateConfigDropdown: () => populateConfigDropdown(elements.configDropdown, selectConfig),
-        selectConfig
-    };
-
-    initSettings(settingsElements, callbacks);
+    initSettings(settingsElements, getConfigCallbacks());
 }
 
 // Select a config from dropdown
@@ -250,16 +252,11 @@ async function loadData() {
     // Load saved configs from localStorage
     loadSavedConfigs();
 
-    // Populate UI
-    populateConfigDropdown(elements.configDropdown, selectConfig);
+    // Populate UI using shared callbacks
+    const callbacks = getConfigCallbacks();
+    callbacks.populateConfigDropdown();
     populateAddConfigServerSelect(elements.addConfigServerSelect);
-    renderSavedConfigsList(
-        elements.savedConfigsList,
-        (configId) => removeConfig(configId, elements, {
-            renderSavedConfigsList: () => renderSavedConfigsList(elements.savedConfigsList, (id) => handleRemoveConfig(id)),
-            populateConfigDropdown: () => populateConfigDropdown(elements.configDropdown, selectConfig)
-        })
-    );
+    callbacks.renderSavedConfigsList();
 
     // Restore last selected config
     const savedConfigId = storage.getSelectedConfig();
@@ -281,14 +278,6 @@ async function loadData() {
         showPlaceholder(elements.branchesCards, 'Select a repository from the dropdown');
         showPlaceholder(elements.cronCards, 'Select a repository from the dropdown');
     }
-}
-
-// Handle remove config (helper for nested callbacks)
-function handleRemoveConfig(configId) {
-    removeConfig(configId, elements, {
-        renderSavedConfigsList: () => renderSavedConfigsList(elements.savedConfigsList, handleRemoveConfig),
-        populateConfigDropdown: () => populateConfigDropdown(elements.configDropdown, selectConfig)
-    });
 }
 
 // Load branch builds

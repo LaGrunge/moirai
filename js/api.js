@@ -3,6 +3,7 @@
 import { state } from './state.js';
 import { getRepoFullName } from './utils.js';
 import { handleError, ErrorTypes } from './errors.js';
+import { SECONDS_IN_DAY, DEFAULT_BUILDS_PER_PAGE, BATCH_SIZE } from './constants.js';
 
 // API request helper - uses proxy to keep tokens server-side
 export async function apiRequest(endpoint) {
@@ -93,7 +94,7 @@ export async function detectCIType(serverId) {
 }
 
 // Get builds endpoint based on CI type
-export function getBuildsEndpoint(perPage = 100) {
+export function getBuildsEndpoint(perPage = DEFAULT_BUILDS_PER_PAGE) {
     const repoFullName = getRepoFullName(state.currentRepo);
 
     if (state.currentServer.type === 'drone') {
@@ -106,7 +107,7 @@ export function getBuildsEndpoint(perPage = 100) {
 // Fetch builds with time filter - common pattern used by multiple tabs
 export async function fetchBuildsForPeriod(periodDays) {
     const allBuilds = await apiRequest(getBuildsEndpoint());
-    const cutoffTime = Math.floor(Date.now() / 1000) - (periodDays * 24 * 60 * 60);
+    const cutoffTime = Math.floor(Date.now() / 1000) - (periodDays * SECONDS_IN_DAY);
     return allBuilds.filter(build => {
         const created = build.created || build.created_at;
         return created >= cutoffTime;
@@ -134,11 +135,10 @@ export async function checkRepoHasBuilds(repo) {
 
 // Filter repositories that have at least one build
 export async function filterReposWithBuilds(repos) {
-    const batchSize = 10;
     const reposWithBuilds = [];
 
-    for (let i = 0; i < repos.length; i += batchSize) {
-        const batch = repos.slice(i, i + batchSize);
+    for (let i = 0; i < repos.length; i += BATCH_SIZE) {
+        const batch = repos.slice(i, i + BATCH_SIZE);
         const results = await Promise.all(batch.map(async (repo) => {
             try {
                 const hasBuilds = await checkRepoHasBuilds(repo);

@@ -48,15 +48,7 @@
     color: var(--text-color);
 }
 
-.overview-period-select {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    font-size: 1rem;
-    cursor: pointer;
-}
+/* .overview-period-select - uses .period-select from base.css */
 
 .overview-kpi-grid {
     display: grid;
@@ -147,17 +139,7 @@
     color: var(--text-secondary);
 }
 
-.overview-loading,
-.overview-error,
-.overview-placeholder {
-    padding: 40px;
-    text-align: center;
-    color: var(--text-secondary);
-}
-
-.overview-error {
-    color: var(--failure-color);
-}
+/* .overview-loading, .overview-error, .overview-placeholder - use .tab-* from base.css */
 
 /* Shared chart styles */
 .bar-chart,

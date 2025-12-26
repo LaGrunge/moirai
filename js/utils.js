@@ -1,5 +1,7 @@
 // Utility functions
 
+import { SECONDS_IN_MINUTE, SECONDS_IN_HOUR, SECONDS_IN_DAY, SECONDS_IN_WEEK } from './constants.js';
+
 // Generate display name from repo path (e.g., "my-cool_repo" -> "My Cool Repo")
 export function generateDisplayName(repoFullName) {
     // Get last part after /
@@ -25,10 +27,10 @@ export function formatTimeAgo(timestamp) {
     const date = new Date(timestamp * 1000);
     const seconds = Math.floor((now - date) / 1000);
 
-    if (seconds < 60) return 'just now';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)} min ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hr ago`;
-    if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+    if (seconds < SECONDS_IN_MINUTE) return 'just now';
+    if (seconds < SECONDS_IN_HOUR) return `${Math.floor(seconds / SECONDS_IN_MINUTE)} min ago`;
+    if (seconds < SECONDS_IN_DAY) return `${Math.floor(seconds / SECONDS_IN_HOUR)} hr ago`;
+    if (seconds < SECONDS_IN_WEEK) return `${Math.floor(seconds / SECONDS_IN_DAY)} days ago`;
 
     return date.toLocaleDateString('en-US');
 }

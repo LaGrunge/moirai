@@ -117,7 +117,7 @@ function calculateInfraStats(builds, periodDays) {
 export function renderInfrastructure(container, stats) {
     if (!stats) {
         container.innerHTML = `
-            <div class="infra-placeholder">
+            <div class="tab-placeholder">
                 <p>Select a repository to view infrastructure details</p>
             </div>
         `;
@@ -128,7 +128,7 @@ export function renderInfrastructure(container, stats) {
         <div class="infra-container">
             <div class="infra-header">
                 <h2>🔧 Infrastructure</h2>
-                <select class="infra-period-select" id="infra-period">
+                <select class="period-select" id="infra-period">
                     <option value="7" ${stats.periodDays === 7 ? 'selected' : ''}>Last 7 days</option>
                     <option value="14" ${stats.periodDays === 14 ? 'selected' : ''}>Last 14 days</option>
                     <option value="30" ${stats.periodDays === 30 ? 'selected' : ''}>Last 30 days</option>
@@ -331,7 +331,6 @@ function renderHourlyChart(distribution) {
 // Period handler using shared factory
 export const initInfraPeriodHandler = createPeriodHandler({
     selectId: 'infra-period',
-    loadingClass: 'infra-loading',
     loadingText: 'Loading infrastructure data...',
     loadData: loadInfrastructureData,
     render: renderInfrastructure

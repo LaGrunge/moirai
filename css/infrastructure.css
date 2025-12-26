@@ -21,15 +21,7 @@
     color: var(--text-color);
 }
 
-.infra-period-select {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    font-size: 1rem;
-    cursor: pointer;
-}
+/* .infra-period-select - uses .period-select from base.css */
 
 .infra-grid {
     display: grid;
@@ -240,17 +232,7 @@
     padding: 8px;
 }
 
-.infra-loading,
-.infra-error,
-.infra-placeholder {
-    padding: 40px;
-    text-align: center;
-    color: var(--text-secondary);
-}
-
-.infra-error {
-    color: var(--failure-color);
-}
+/* .infra-loading, .infra-error, .infra-placeholder - use .tab-* from base.css */
 
 /* Responsive Infrastructure */
 @media (max-width: 768px) {

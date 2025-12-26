@@ -21,15 +21,7 @@
     color: var(--text-color);
 }
 
-.contrib-period-select {
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background-color: var(--card-bg);
-    color: var(--text-color);
-    font-size: 1rem;
-    cursor: pointer;
-}
+/* .contrib-period-select - uses .period-select from base.css */
 
 .contrib-summary {
     display: flex;
@@ -335,17 +327,7 @@
     color: var(--failure-color);
 }
 
-.contrib-loading,
-.contrib-error,
-.contrib-placeholder {
-    padding: 40px;
-    text-align: center;
-    color: var(--text-secondary);
-}
-
-.contrib-error {
-    color: var(--failure-color);
-}
+/* .contrib-loading, .contrib-error, .contrib-placeholder - use .tab-* from base.css */
 
 /* Responsive Contributors */
 @media (max-width: 768px) {
