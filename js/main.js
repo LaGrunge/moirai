@@ -28,6 +28,7 @@ const elements = {
     // Settings elements
     clearCacheBtn: document.getElementById('clear-cache-btn'),
     filterEmptyReposCheckbox: document.getElementById('setting-filter-empty-repos'),
+    statsPeriodSelect: document.getElementById('setting-stats-period'),
     addConfigServerSelect: document.getElementById('add-config-server'),
     addConfigRepoSelect: document.getElementById('add-config-repo'),
     addConfigNameInput: document.getElementById('add-config-name'),

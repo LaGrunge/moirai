@@ -9,6 +9,7 @@ export function initSettings(elements, callbacks) {
     const {
         clearCacheBtn,
         filterEmptyReposCheckbox,
+        statsPeriodSelect,
         addConfigServerSelect,
         addConfigRepoSelect,
         addConfigNameInput,
@@ -21,6 +22,15 @@ export function initSettings(elements, callbacks) {
         state.settings.filterEmptyRepos = e.target.checked;
         saveSettings();
     });
+
+    // Initialize stats period select from settings
+    if (statsPeriodSelect) {
+        statsPeriodSelect.value = state.settings.statsPeriodDays || 30;
+        statsPeriodSelect.addEventListener('change', (e) => {
+            state.settings.statsPeriodDays = parseInt(e.target.value);
+            saveSettings();
+        });
+    }
 
     // Handle clear cache button
     clearCacheBtn.addEventListener('click', () => {

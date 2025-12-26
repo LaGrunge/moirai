@@ -33,16 +33,22 @@ export function formatTimeAgo(timestamp) {
     return date.toLocaleDateString('en-US');
 }
 
-// Format duration
+// Format duration from timestamps
 export function formatDuration(started, finished) {
     if (!started || !finished) return 'N/A';
+    return formatSeconds(finished - started);
+}
 
-    const duration = finished - started;
-    if (duration < 60) return `${duration}s`;
-    if (duration < 3600) return `${Math.floor(duration / 60)}m ${duration % 60}s`;
+// Format duration in seconds to human readable string
+export function formatSeconds(seconds) {
+    if (seconds == null || seconds < 0) return 'N/A';
 
-    const hours = Math.floor(duration / 3600);
-    const minutes = Math.floor((duration % 3600) / 60);
+    seconds = Math.round(seconds);
+    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
     return `${hours}h ${minutes}m`;
 }
 

@@ -78,6 +78,16 @@
                         <span class="setting-label">Hide repositories without builds</span>
                         <span class="setting-description">When adding a repository, only show repos that have at least one build</span>
                     </label>
+                    <div class="setting-item">
+                        <label for="setting-stats-period" class="setting-label">Default statistics period</label>
+                        <select id="setting-stats-period" class="form-select setting-select">
+                            <option value="7">7 days</option>
+                            <option value="14">14 days</option>
+                            <option value="30" selected>30 days</option>
+                            <option value="90">90 days</option>
+                        </select>
+                        <span class="setting-description">Default time period for build statistics</span>
+                    </div>
                 </div>
 
                 <div class="settings-section">

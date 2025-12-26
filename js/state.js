@@ -22,7 +22,8 @@ export const state = {
     
     // Settings
     settings: {
-        filterEmptyRepos: true
+        filterEmptyRepos: true,
+        statsPeriodDays: 30  // Default period for statistics
     }
 };
 

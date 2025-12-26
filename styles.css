@@ -828,3 +828,195 @@ a.commit-sha:hover {
 [data-theme="dark"] .theme-toggle .icon-moon {
     display: none;
 }
+
+/* Stats Panel Styles */
+.card-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.stats-btn {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.stats-btn:hover {
+    opacity: 1;
+    background-color: var(--hover-bg);
+}
+
+.stats-btn.active {
+    opacity: 1;
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.stats-container {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 16px;
+    margin-top: -8px;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.stats-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stats-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+.stats-period-select {
+    padding: 4px 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.stats-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 8px;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.stat-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-color);
+    word-break: break-word;
+    text-align: center;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    text-align: center;
+}
+
+.stat-good { color: var(--success-color); }
+.stat-warning { color: var(--pending-color); }
+.stat-bad { color: var(--failure-color); }
+
+.stat-status {
+    text-transform: uppercase;
+}
+
+.stats-histogram {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.histogram-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 80px;
+    padding: 8px;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.hist-bar {
+    flex: 1;
+    min-width: 4px;
+    max-width: 20px;
+    border-radius: 2px 2px 0 0;
+    transition: opacity 0.2s ease;
+    cursor: pointer;
+}
+
+.hist-bar:hover {
+    opacity: 0.8;
+}
+
+.hist-success { background-color: var(--success-color); }
+.hist-failure { background-color: var(--failure-color); }
+.hist-error { background-color: var(--failure-color); }
+.hist-running { background-color: var(--running-color); }
+.hist-pending { background-color: var(--pending-color); }
+.hist-killed { background-color: var(--killed-color, #6c757d); }
+.hist-skipped { background-color: var(--skipped-color, #6c757d); }
+
+.histogram-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.stats-loading,
+.stats-error {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.stats-error {
+    color: var(--failure-color);
+}
+
+.no-data {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* Responsive stats */
+@media (max-width: 600px) {
+    .stats-metrics {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Settings select */
+.setting-select {
+    margin-top: 8px;
+    max-width: 200px;
+}
