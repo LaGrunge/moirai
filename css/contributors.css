@@ -227,6 +227,170 @@
     background-color: var(--text-secondary);
 }
 
+/* HTML-based chart */
+.contrib-chart-html {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.chart-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.chart-row-label {
+    width: 200px;
+    min-width: 200px;
+    text-align: right;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chart-row-bars {
+    flex: 1;
+    display: flex;
+    height: 28px;
+    background-color: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.chart-bar {
+    height: 100%;
+    transition: opacity 0.2s, filter 0.2s;
+    min-width: 2px;
+}
+
+.chart-bar:hover {
+    filter: brightness(1.1);
+}
+
+.chart-bar.expanded {
+    filter: brightness(0.9);
+}
+
+.chart-bar.success {
+    background-color: var(--success-color);
+}
+
+.chart-bar.failure {
+    background-color: var(--failure-color);
+}
+
+.chart-bar.other {
+    background-color: var(--text-secondary);
+}
+
+.chart-row-value {
+    width: 40px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-color);
+}
+
+/* Builds drill-down list */
+.chart-row-builds {
+    margin-left: 212px;
+    margin-bottom: 8px;
+}
+
+.builds-list {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.builds-list-header {
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    background-color: var(--card-footer-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.builds-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    text-decoration: none;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.15s;
+}
+
+.builds-list-item:last-child {
+    border-bottom: none;
+}
+
+.builds-list-item:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.1);
+}
+
+.builds-list-item .build-number {
+    font-weight: 600;
+    min-width: 60px;
+}
+
+.builds-list-item.status-success .build-number {
+    color: var(--success-color);
+}
+
+.builds-list-item.status-failure .build-number,
+.builds-list-item.status-error .build-number {
+    color: var(--failure-color);
+}
+
+.builds-list-item .build-branch {
+    font-size: 0.85rem;
+    color: var(--primary-color);
+    min-width: 100px;
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.builds-list-item .build-message {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.builds-list-item .build-time {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    min-width: 80px;
+    text-align: right;
+}
+
+.builds-list-empty {
+    padding: 12px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.builds-list-more {
+    padding: 8px 12px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    background-color: var(--card-footer-bg);
+}
+
 /* Leaderboard */
 .contrib-leaderboard {
     background-color: var(--card-bg);
