@@ -1,6 +1,8 @@
 // Shared period handler for tabs with period selection
 // Eliminates duplication across overview, infrastructure, and contributors tabs
 
+import { state } from '../state.js';
+
 /**
  * Creates a period change handler for a tab
  * @param {Object} config - Configuration object
@@ -18,6 +20,11 @@ export function createPeriodHandler(config) {
         if (!periodSelect) return;
 
         periodSelect.addEventListener('change', async (e) => {
+            // In demo mode, don't reload data - just keep current view
+            if (state.demoMode) {
+                return;
+            }
+            
             const newPeriod = parseInt(e.target.value);
             container.innerHTML = `<div class="tab-loading">${loadingText}</div>`;
             

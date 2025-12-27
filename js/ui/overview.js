@@ -12,6 +12,13 @@ let overviewAllBuilds = [];
 let overviewCronBuilds = [];
 let overviewPeriodDays = 30;
 
+// Set demo data for overview (used by demo mode)
+export function setOverviewDemoData(allBuilds, cronBuilds, periodDays = 30) {
+    overviewAllBuilds = allBuilds;
+    overviewCronBuilds = cronBuilds;
+    overviewPeriodDays = periodDays;
+}
+
 // Load overview data for current repository
 export async function loadOverviewData(periodDays = null) {
     if (periodDays === null) {
@@ -577,6 +584,14 @@ export function initOverviewPeriodHandler(container) {
     const periodSelect = container.querySelector('#overview-period');
     if (periodSelect) {
         periodSelect.addEventListener('change', async (e) => {
+            // In demo mode, just recalculate with existing data
+            if (state.demoMode) {
+                const stats = recalculateOverviewStats();
+                renderOverview(container, stats);
+                initOverviewPeriodHandler(container);
+                return;
+            }
+            
             const newPeriod = parseInt(e.target.value);
             container.innerHTML = `<div class="tab-loading">Loading...</div>`;
             

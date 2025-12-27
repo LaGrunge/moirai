@@ -4,6 +4,7 @@ import { state, CI_ICONS } from '../state.js';
 import { escapeHtml, formatTimeAgo, formatDuration, getStatusClass, getStatusText, getRepoFullName } from '../utils.js';
 import { showPlaceholder } from './common.js';
 import { getBranchBuilds, calculateStats, generateHistogramData, renderStatsPanel, getDefaultStatsPeriod } from '../stats.js';
+import { getDemoBranchStats } from '../demoData.js';
 
 // Get build URL based on CI type
 export function getBuildUrl(build) {
@@ -110,9 +111,19 @@ async function loadStatsContent(statsContainer, branch, isCron, periodDays, isPR
     statsContainer.innerHTML = '<div class="stats-loading">Loading statistics...</div>';
 
     try {
-        const builds = await getBranchBuilds(branch, periodDays, isCron, isPR);
-        const stats = calculateStats(builds);
-        const histogramData = generateHistogramData(builds, builds.length, getBuildUrl);
+        let builds, stats, histogramData;
+        
+        // In demo mode, use demo data instead of API
+        if (state.demoMode) {
+            const demoStats = getDemoBranchStats(branch);
+            builds = demoStats.builds;
+            stats = demoStats;
+            histogramData = generateHistogramData(builds, builds.length, getBuildUrl);
+        } else {
+            builds = await getBranchBuilds(branch, periodDays, isCron, isPR);
+            stats = calculateStats(builds);
+            histogramData = generateHistogramData(builds, builds.length, getBuildUrl);
+        }
 
         statsContainer.innerHTML = renderStatsPanel(stats, histogramData, periodDays);
 

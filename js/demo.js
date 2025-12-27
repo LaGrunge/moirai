@@ -3,6 +3,20 @@
 import { state, originalFunctions } from './state.js';
 import { storage } from './storage.js';
 import { renderBranchCards, renderCronCards } from './ui/cards.js';
+import { renderOverview, initOverviewPeriodHandler, setOverviewDemoData } from './ui/overview.js';
+import { renderInfrastructure, initInfraPeriodHandler } from './ui/infrastructure.js';
+import { renderContributors, initContribPeriodHandler } from './ui/contributors.js';
+import { 
+    DEMO_BUILDS, 
+    DEMO_CRON_BUILDS, 
+    DEMO_OVERVIEW, 
+    DEMO_INFRASTRUCTURE, 
+    DEMO_CONTRIBUTORS,
+    DEMO_CONFIG,
+    getDemoTrendData,
+    DEMO_ALL_BUILDS,
+    DEMO_OVERVIEW_CRON_BUILDS
+} from './demoData.js';
 
 // Update demo mode UI
 export function updateDemoModeUI(demoToggle) {
@@ -33,6 +47,9 @@ export function initDemoMode(demoToggle, callbacks) {
     });
 }
 
+// Store original state for demo mode
+let originalState = null;
+
 // Exit demo mode
 export function exitDemoMode(callbacks) {
     // Restore original functions
@@ -41,12 +58,16 @@ export function exitDemoMode(callbacks) {
         window.loadCronBuilds = originalFunctions.loadCronBuilds;
     }
 
+    // Clear original state
+    originalState = null;
+    
     // Clear demo state
     state.currentConfig = null;
     state.currentServer = null;
     state.currentRepo = null;
+    state.savedConfigs = [];
 
-    // Reload real data
+    // Reload everything from scratch
     if (callbacks.loadData) {
         callbacks.loadData();
     }
@@ -54,37 +75,33 @@ export function exitDemoMode(callbacks) {
 
 // Load demo data
 export function loadDemoData(callbacks) {
+    // Save original state before overriding
+    if (!originalState) {
+        originalState = {
+            savedConfigs: [...state.savedConfigs],
+            currentConfig: state.currentConfig,
+            currentServer: state.currentServer,
+            currentRepo: state.currentRepo
+        };
+    }
+    
     // Save original functions before overriding
     if (!originalFunctions.loadBranchBuilds && callbacks.loadBranchBuilds) {
         originalFunctions.loadBranchBuilds = callbacks.loadBranchBuilds;
         originalFunctions.loadCronBuilds = callbacks.loadCronBuilds;
     }
 
-    // Create demo config
-    const demoConfig = {
-        id: 'demo-config',
-        serverId: 'demo-woodpecker',
-        serverName: 'Demo Woodpecker',
-        serverType: 'woodpecker',
-        serverUrl: 'https://ci.example.com',
-        serverToken: 'demo',
-        repoId: '1',
-        repoFullName: 'woodpecker-ci/woodpecker',
-        repoData: { id: 1, owner: 'woodpecker-ci', name: 'woodpecker', full_name: 'woodpecker-ci/woodpecker' },
-        displayName: 'Demo Project'
-    };
-
     // Set demo as current
-    state.savedConfigs = [demoConfig];
-    state.currentConfig = demoConfig;
+    state.savedConfigs = [DEMO_CONFIG];
+    state.currentConfig = DEMO_CONFIG;
     state.currentServer = {
-        id: demoConfig.serverId,
-        name: demoConfig.serverName,
-        type: demoConfig.serverType,
-        url: demoConfig.serverUrl,
-        token: demoConfig.serverToken
+        id: DEMO_CONFIG.serverId,
+        name: DEMO_CONFIG.serverName,
+        type: DEMO_CONFIG.serverType,
+        url: DEMO_CONFIG.serverUrl,
+        token: DEMO_CONFIG.serverToken
     };
-    state.currentRepo = demoConfig.repoData;
+    state.currentRepo = DEMO_CONFIG.repoData;
 
     // Update UI
     if (callbacks.populateConfigDropdown) {
@@ -96,123 +113,65 @@ export function loadDemoData(callbacks) {
     
     loadDemoBranchBuilds(callbacks.elements?.branchesCards);
     loadDemoCronBuilds(callbacks.elements?.cronCards);
+    loadDemoOverview(callbacks.elements?.overviewContent);
+    loadDemoInfrastructure(callbacks.elements?.infraContent);
+    loadDemoContributors(callbacks.elements?.contributorsContent);
 }
 
 // Load demo branch builds
 export function loadDemoBranchBuilds(container) {
-    const demoBuilds = [
-        {
-            number: 142,
-            branch: 'main',
-            displayName: 'main',
-            status: 'success',
-            event: 'push',
-            commit: 'a1b2c3d4e5f6g7h8i9j0',
-            message: 'feat: add new dashboard feature',
-            created: Math.floor(Date.now() / 1000) - 3600,
-            started: Math.floor(Date.now() / 1000) - 3500,
-            finished: Math.floor(Date.now() / 1000) - 3200
-        },
-        {
-            number: 141,
-            branch: 'develop',
-            displayName: 'develop',
-            status: 'running',
-            event: 'push',
-            commit: 'b2c3d4e5f6g7h8i9j0k1',
-            message: 'chore: update dependencies',
-            created: Math.floor(Date.now() / 1000) - 600,
-            started: Math.floor(Date.now() / 1000) - 550,
-            finished: null
-        },
-        {
-            number: 140,
-            branch: 'feature/auth',
-            displayName: 'feature/auth',
-            status: 'failure',
-            event: 'push',
-            commit: 'c3d4e5f6g7h8i9j0k1l2',
-            message: 'fix: authentication flow',
-            created: Math.floor(Date.now() / 1000) - 7200,
-            started: Math.floor(Date.now() / 1000) - 7100,
-            finished: Math.floor(Date.now() / 1000) - 6900
-        },
-        {
-            number: 139,
-            branch: 'feature/api',
-            displayName: 'PR #42',
-            status: 'success',
-            event: 'pull_request',
-            isPR: true,
-            prNumber: 42,
-            commit: 'd4e5f6g7h8i9j0k1l2m3',
-            message: 'feat: implement REST API endpoints',
-            ref: 'refs/pull/42/head',
-            created: Math.floor(Date.now() / 1000) - 86400,
-            started: Math.floor(Date.now() / 1000) - 86300,
-            finished: Math.floor(Date.now() / 1000) - 85800
-        },
-        {
-            number: 138,
-            branch: 'hotfix/security',
-            displayName: 'hotfix/security',
-            status: 'pending',
-            event: 'push',
-            commit: 'e5f6g7h8i9j0k1l2m3n4',
-            message: 'security: patch vulnerability',
-            created: Math.floor(Date.now() / 1000) - 300,
-            started: null,
-            finished: null
-        }
-    ];
-
+    // Store demo builds in state for filtering
+    state.lastBranchBuilds = DEMO_BUILDS;
+    
     if (container) {
-        renderBranchCards(demoBuilds, container);
+        renderBranchCards(DEMO_BUILDS, container);
     }
 }
 
-// Load demo cron builds
+// Load demo cron builds  
 export function loadDemoCronBuilds(container) {
-    const demoCronBuilds = [
-        {
-            number: 135,
-            branch: 'main',
-            cron: 'nightly-build',
-            status: 'success',
-            event: 'cron',
-            commit: 'a1b2c3d4e5f6g7h8i9j0',
-            message: 'Nightly build',
-            created: Math.floor(Date.now() / 1000) - 28800,
-            started: Math.floor(Date.now() / 1000) - 28700,
-            finished: Math.floor(Date.now() / 1000) - 27000
-        },
-        {
-            number: 130,
-            branch: 'main',
-            cron: 'weekly-security-scan',
-            status: 'success',
-            event: 'cron',
-            commit: 'f6g7h8i9j0k1l2m3n4o5',
-            message: 'Weekly security scan',
-            created: Math.floor(Date.now() / 1000) - 172800,
-            started: Math.floor(Date.now() / 1000) - 172700,
-            finished: Math.floor(Date.now() / 1000) - 171000
-        },
-        {
-            number: 125,
-            branch: 'develop',
-            cron: 'integration-tests',
-            status: 'failure',
-            event: 'cron',
-            commit: 'g7h8i9j0k1l2m3n4o5p6',
-            message: 'Integration tests',
-            created: Math.floor(Date.now() / 1000) - 43200,
-            started: Math.floor(Date.now() / 1000) - 43100,
-            finished: Math.floor(Date.now() / 1000) - 42000
+    // Group cron builds by cron job name and store in state for filtering
+    const cronGroups = {};
+    DEMO_CRON_BUILDS.forEach(build => {
+        const cronName = build.cron || 'default';
+        if (!cronGroups[cronName] || build.created > cronGroups[cronName].created) {
+            cronGroups[cronName] = build;
         }
-    ];
-
+    });
+    state.lastCronBuilds = Object.values(cronGroups);
+    
     if (container) {
-        renderCronCards(demoCronBuilds, container);
+        renderCronCards(state.lastCronBuilds, container);
     }
+}
+
+// Load demo overview
+function loadDemoOverview(container) {
+    if (!container) return;
+    
+    // Set demo data for overview toggle functionality
+    setOverviewDemoData(DEMO_ALL_BUILDS, DEMO_OVERVIEW_CRON_BUILDS, 30);
+    
+    const demoData = {
+        ...DEMO_OVERVIEW,
+        trendData: getDemoTrendData(30)
+    };
+    renderOverview(container, demoData);
+    initOverviewPeriodHandler(container);
+}
+
+// Load demo infrastructure
+function loadDemoInfrastructure(container) {
+    if (!container) return;
+    
+    renderInfrastructure(container, DEMO_INFRASTRUCTURE);
+    initInfraPeriodHandler(container);
+}
+
+// Load demo contributors
+function loadDemoContributors(container) {
+    if (!container) return;
+    
+    renderContributors(container, DEMO_CONTRIBUTORS);
+    initContribPeriodHandler(container);
 }

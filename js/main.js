@@ -98,9 +98,7 @@ function initToolbar(config) {
             clearTimeout(filterTimeout);
             filterTimeout = setTimeout(() => {
                 state[filterStateKey] = e.target.value;
-                if (getBuilds().length > 0) {
-                    applyFilterAndRender();
-                }
+                applyFilterAndRender();
             }, 200);
         });
     }
@@ -109,9 +107,7 @@ function initToolbar(config) {
     if (sortSelect) {
         sortSelect.addEventListener('change', () => {
             state[sortStateKey] = sortSelect.value;
-            if (getBuilds().length > 0) {
-                applyFilterAndRender();
-            }
+            applyFilterAndRender();
         });
     }
 }
@@ -151,9 +147,7 @@ function initStatusFilterDropdown(dropdownEl, stateKey, applyFilterAndRender, ge
             const allChecked = state[stateKey].size === 6;
             btn.classList.toggle('has-filter', !allChecked);
             
-            if (getBuilds().length > 0) {
-                applyFilterAndRender();
-            }
+            applyFilterAndRender();
         });
     });
 }
@@ -173,18 +167,14 @@ function initBranchToolbar() {
     elements.toggleBranches.addEventListener('click', () => {
         elements.toggleBranches.classList.toggle('active');
         state.showBranches = elements.toggleBranches.classList.contains('active');
-        if (state.lastBranchBuilds.length > 0) {
-            applyBranchFilterAndRender();
-        }
+        applyBranchFilterAndRender();
     });
     
     // Toggle PRs visibility (specific to branches tab)
     elements.togglePRs.addEventListener('click', () => {
         elements.togglePRs.classList.toggle('active');
         state.showPRs = elements.togglePRs.classList.contains('active');
-        if (state.lastBranchBuilds.length > 0) {
-            applyBranchFilterAndRender();
-        }
+        applyBranchFilterAndRender();
     });
     
     // Status filter dropdown
@@ -261,7 +251,10 @@ async function selectConfig(configId) {
             };
             state.currentRepo = state.currentConfig.repoData;
 
-            storage.saveSelectedConfig(configId);
+            // Don't save demo config to localStorage
+            if (!state.demoMode) {
+                storage.saveSelectedConfig(configId);
+            }
             updateConfigSelectButton(elements.configSelectBtn);
             updateConfigDropdownSelection(elements.configDropdown);
 
@@ -303,6 +296,11 @@ function createTabLoader(container, loadFn, renderFn, initHandlerFn, loadingClas
     return async function() {
         if (!state.currentServer || !state.currentRepo) {
             showPlaceholder(container, placeholderText);
+            return;
+        }
+
+        // Skip loading in demo mode - demo data is already rendered
+        if (state.demoMode) {
             return;
         }
 
@@ -357,6 +355,12 @@ async function loadData() {
     // Load saved configs from localStorage
     loadSavedConfigs();
 
+    // If demo mode is active, switch to demo data
+    if (state.demoMode) {
+        loadDemoData(getDemoCallbacks());
+        return;
+    }
+
     // Populate UI using shared callbacks
     const callbacks = getConfigCallbacks();
     callbacks.populateConfigDropdown();
@@ -388,6 +392,9 @@ async function loadData() {
 // Load branch builds
 async function loadBranchBuilds() {
     if (!state.currentRepo || !state.currentServer) return;
+    
+    // Skip loading in demo mode - demo data is already rendered
+    if (state.demoMode) return;
 
     showLoading(elements.branchesCards);
 
@@ -436,6 +443,9 @@ function applyBranchFilterAndRender() {
 // Load cron builds
 async function loadCronBuilds() {
     if (!state.currentRepo || !state.currentServer) return;
+    
+    // Skip loading in demo mode - demo data is already rendered
+    if (state.demoMode) return;
 
     showLoading(elements.cronCards);
 
