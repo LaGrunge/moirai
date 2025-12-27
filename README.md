@@ -256,6 +256,40 @@ With Docker, port 80 works out of the box. For manual setup, the `start.sh` scri
 
 ---
 
+## Screenshots
+
+### Branches Tab
+View latest build status for each branch and pull request with filtering and sorting.
+
+![Branches Tab](assets/screenshots/branches.png)
+
+### Cron Builds Tab
+Dedicated view for scheduled/cron builds.
+
+![Cron Builds Tab](assets/screenshots/cron.png)
+
+### Overview Tab
+Build statistics, trends, and branch breakdown with interactive charts.
+
+![Overview Tab](assets/screenshots/overview.png)
+
+### Contributors Tab
+Leaderboard with podium, activity charts, and detailed statistics.
+
+![Contributors Tab](assets/screenshots/contributors.png)
+
+### Infrastructure Tab
+Resource usage, costs, queue status, and problem detection.
+
+![Infrastructure Tab](assets/screenshots/infrastructure.png)
+
+### Settings Tab
+Configure saved repositories, limits, and preferences.
+
+![Settings Tab](assets/screenshots/settings.png)
+
+---
+
 ## License
 
 MIT
