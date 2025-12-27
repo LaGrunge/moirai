@@ -6,16 +6,38 @@ import { showPlaceholder } from './common.js';
 
 // Initialize config select dropdown
 export function initConfigSelect(configSelectBtn, configDropdown) {
+    const backdrop = document.getElementById('dropdown-backdrop');
+    
+    const openDropdown = () => {
+        configDropdown.classList.add('open');
+        if (backdrop) backdrop.classList.add('visible');
+    };
+    
+    const closeDropdown = () => {
+        configDropdown.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('visible');
+    };
+    
     // Toggle dropdown
     configSelectBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        configDropdown.classList.toggle('open');
+        if (configDropdown.classList.contains('open')) {
+            closeDropdown();
+        } else {
+            openDropdown();
+        }
     });
 
-    // Close dropdown when clicking outside
+    // Close dropdown when clicking outside or on backdrop
     document.addEventListener('click', () => {
-        configDropdown.classList.remove('open');
+        closeDropdown();
     });
+    
+    if (backdrop) {
+        backdrop.addEventListener('click', () => {
+            closeDropdown();
+        });
+    }
 
     // Prevent dropdown from closing when clicking inside it
     configDropdown.addEventListener('click', (e) => {
@@ -51,6 +73,13 @@ export function updateConfigDropdownSelection(configDropdown) {
 
 // Populate config dropdown
 export function populateConfigDropdown(configDropdown, onSelectConfig) {
+    const backdrop = document.getElementById('dropdown-backdrop');
+    
+    const closeDropdown = () => {
+        configDropdown.classList.remove('open');
+        if (backdrop) backdrop.classList.remove('visible');
+    };
+    
     if (state.savedConfigs.length === 0) {
         configDropdown.innerHTML = '<div class="config-dropdown-empty">No saved repositories. Go to Settings to add one.</div>';
         return;
@@ -68,7 +97,10 @@ export function populateConfigDropdown(configDropdown, onSelectConfig) {
                 <div class="config-details">${escapeHtml(config.serverName)}</div>
             </div>
         `;
-        item.addEventListener('click', () => onSelectConfig(config.id));
+        item.addEventListener('click', () => {
+            closeDropdown();
+            onSelectConfig(config.id);
+        });
         configDropdown.appendChild(item);
     });
 
