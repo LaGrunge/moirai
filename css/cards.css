@@ -460,8 +460,13 @@ a.commit-sha:hover {
 /* Responsive */
 @media (max-width: 768px) {
     .cards-container {
-        grid-template-columns: 1fr;
-        gap: 1rem;
+        display: block; /* Remove grid, use block layout */
+        max-width: 100%;
+    }
+    
+    .card-wrapper {
+        margin-bottom: 1rem;
+        max-width: 100%;
     }
 
     .branches-toolbar {
@@ -473,6 +478,12 @@ a.commit-sha:hover {
         width: 100%;
         min-width: unset;
     }
+    
+    .card {
+        /* Ensure card fits screen width */
+        max-width: 100%;
+        min-width: 0;
+    }
 
     .sort-buttons {
         width: 100%;
@@ -480,13 +491,13 @@ a.commit-sha:hover {
     }
 
     .card-header {
-        padding: 0.875rem 1rem;
+        padding: 0.75rem;
         flex-wrap: wrap;
         gap: 0.5rem;
     }
 
     .card-title {
-        font-size: 1rem;
+        font-size: 0.95rem;
         flex: 1;
         min-width: 0;
         overflow: hidden;
@@ -495,24 +506,45 @@ a.commit-sha:hover {
     }
 
     .card-body {
-        padding: 1rem;
+        padding: 0.75rem;
     }
 
     .build-row {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        flex-wrap: wrap;
+        gap: 0.25rem;
+    }
+    
+    .build-label {
+        min-width: 70px;
+    }
+    
+    .build-value {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .card-footer {
-        padding: 0.625rem 1rem;
+        padding: 0.5rem 0.75rem;
     }
 
     .commit-info {
         flex-wrap: wrap;
+        gap: 0.25rem;
     }
 
     .commit-message {
         width: 100%;
         margin-top: 0.25rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .commit-sha {
+        font-size: 0.75rem;
     }
 }
 
